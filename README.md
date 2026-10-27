@@ -4,7 +4,7 @@ Aplicación local hecha con HTML, CSS y JavaScript. No usa npm ni paquetes exter
 
 ## Módulos
 
-- `index.html`: Libro Diario e importación CSV.
+- `index.html`: centro de control con selector mensual; `partida_manual.html`: captura e importación CSV.
 - `catalogo_cuentas.html`: catálogo organizado como DAG.
 - `inventario.html`: compras, ventas, existencias y costo promedio conectados al Libro Diario.
 - `reportes.html`: Balanza de comprobación, Balance general y Estado de resultados.
@@ -19,22 +19,14 @@ Aplicación local hecha con HTML, CSS y JavaScript. No usa npm ni paquetes exter
 
 ## Ejecución
 
-1. Abra esta carpeta en Visual Studio Code.
-2. Ejecute `index.html` con Live Server.
-3. Use siempre la misma dirección y puerto para conservar la misma IndexedDB.
+1. Desde la raíz ejecute `python3 -m http.server 8000 --bind 127.0.0.1` o use Live Server.
+2. Abra `index.html` mediante el servidor HTTP.
+3. Use siempre el mismo origen y puerto para conservar IndexedDB. Para acceso remoto use HTTPS: las mutaciones usan Web Locks. No abra los archivos mediante `file://`.
 
 ## Verificación
+Las pruebas actuales están en `tests/integracion.cjs`; ejecución y requisitos en `tests/README.md`. Usan Chromium e IndexedDB real con perfiles temporales. Los antiguos `tests/pruebas.html` y `scripts/verificar_proyecto.ps1` no estaban incluidos en el ZIP original.
 
-Desde PowerShell, ubicado en la raíz del proyecto:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\verificar_proyecto.ps1
-```
-
-Después abra `tests/pruebas.html` con Live Server para ejecutar las pruebas del navegador.
-
-La documentación general está en `docs/README.md`.
-
+Los cambios de integridad están documentados en `docs/verificaciones/VERIFICACION_CORRECCIONES_INTEGRIDAD.md`; las instrucciones por archivo están en `docs/INSTRUCCIONES_INTERVENCION_ERP.md`.
 
 ## Inventario
 Las unidades se registran dentro de las partidas del Libro Diario o del importador CSV. `inventario.html` es únicamente un reporte derivado; no registra operaciones.
@@ -53,7 +45,7 @@ El Libro Diario permite editar partidas manuales e importadas por CSV con persis
 El módulo de depreciación separa validación, cálculo, verificación, construcción contable, planificación, persistencia y renderizado. La fórmula de línea recta se mantiene en un único punto, las fechas se pasan como snapshot para obtener resultados deterministas y cada cálculo debe superar tres verificaciones matemáticas antes de renderizarse o utilizarse para contabilización.
 
 ## Navegación web y consulta por cuenta
-La carátula `index.html` queda reservada al dashboard/resumen contable. La captura completa del Libro Diario se conserva en `libro_diario.html` con las mismas funciones de registro manual, importación CSV, edición y eliminación ya existentes.
+La carátula `index.html` queda reservada al dashboard/resumen contable. La captura de partidas manuales se conserva en `partida_manual.html` con las mismas funciones de registro manual, importación CSV, edición y eliminación ya existentes.
 
 En `reportes.html`, las cuentas de Balanza de comprobación, Balance general y Estado de resultados son seleccionables. Al seleccionar una cuenta se despliegan únicamente las líneas del Libro Diario cuyo `codigo` coincide con esa cuenta y cuya fecha pertenece al mismo período del reporte; no se muestran las contrapartidas de otras cuentas.
 

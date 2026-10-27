@@ -207,11 +207,14 @@ async function fase2ValidarVenta(entrada, idExcluir) {
         if (!tercero) throw new Error("El NRC del cliente no existe en el catálogo de terceros.");
         canonica = { ...entrada, cliente: tercero.razonSocial, nrc: tercero.nrc, giro: tercero.giro || "" };
     }
+    validarPeriodosEditablesIVA(canonica.fecha, canonica.fecha, movimientos);
     const id = crearIdOperacion("VENTA", canonica.fecha, canonica.documento, String(canonica.nrc || "CF"));
     const duplicada = ventas.some(function(v) { return String(v.id) !== String(idExcluir || "") && String(v.id) === String(id); });
     if (duplicada) throw new Error("La venta ya fue registrada para ese cliente y documento.");
     const resumen = calcularResumenVenta(canonica.lineas, { estricto: true });
-    validarExistenciaVenta(resumen.lineas, inventario);
+    const anterior = idExcluir ? ventas.find(function(v) { return String(v.id) === String(idExcluir); }) : null;
+const inventarioValidacion = anterior ? Array.from(construirMapaInventarioDesdeMovimientos(movimientos.filter(function(m) { return Number(m.id) !== Number(anterior.movimientoId); })).estados.values()) : inventario;
+validarExistenciaVenta(resumen.lineas, inventarioValidacion);
     return { canonica: canonica, movimientos: movimientos, inventario: inventario, ventas: ventas, id: id };
 }
 function fase3ProcesarVenta(validacion, movimientosBase, inventarioBase, marcaTiempo) {
@@ -223,17 +226,26 @@ function fase3ProcesarVenta(validacion, movimientosBase, inventarioBase, marcaTi
     );
 }
 async function fase4PersistirVenta(procesada, movimientosPrevios) {
+    procesada.planRecuperacion = { movimientosOriginales: movimientosPrevios };
     await persistirOperacionComercial("VENTA", procesada.registro, procesada.movimiento, movimientosPrevios);
     return procesada;
 }
 async function fase5VerificarVenta(procesada, movimientosEsperados, tipoEvento, accion) {
-    const ok = await verificarEstadoComercialPersistido("VENTA", procesada.registro, procesada.movimiento, movimientosEsperados);
-    if (!ok) throw new Error("La venta fue persistida, pero la fase 5 no pudo verificar registro, partida e inventario.");
+    // Inicio fase 5 — Relectura completa; recuperar antes de cualquier evento.
+try {
+const ok = await verificarEstadoComercialPersistido("VENTA", procesada.registro, procesada.movimiento, movimientosEsperados);
+if (!ok) throw new Error("La fase 5 no pudo verificar registro, partida e inventario de ventas.");
+} catch (error) {
+await recuperarVerificacionComercial("VENTA", procesada);
+throw error;
+}
+// Fin fase 5
     if (tipoEvento) await publicarEventoComercialSeguro(tipoEvento, "VENTA", procesada.registro, accion);
     return procesada.registro;
 }
 
 async function registrarVenta(datos) {
+return ejecutarConBloqueoContable(async function() {
     // FASE 1 — Entrada y normalización.
     const entrada = fase1EntradaVenta(datos);
     // FASE 2 — Validación de cliente, duplicidad, stock e invariantes.
@@ -249,9 +261,11 @@ async function registrarVenta(datos) {
         TIPOS_EVENTOS.VENTA_REGISTRADA,
         "registrar"
     );
+});
 }
 
 async function editarVenta(idOriginal, datos) {
+return ejecutarConBloqueoContable(async function() {
     // FASE 1 — Entrada y normalización.
     const entrada = fase1EntradaVenta(datos);
     // FASE 2 — Validación contra estado actual, stock y período IVA.
@@ -270,6 +284,7 @@ async function editarVenta(idOriginal, datos) {
     procesada.movimiento.editadoEn = marcaEdicion;
     construirMapaInventarioDesdeMovimientos(plan.movimientosRestantes.concat([procesada.movimiento]));
     // FASE 4 — Sustitución persistente con recuperación automática.
+    procesada.planRecuperacion = plan;
     await persistirEdicionComercial(plan, procesada.registro, procesada.movimiento);
     // FASE 5 — Verificación persistida y publicación EDA.
     return fase5VerificarVenta(
@@ -278,6 +293,7 @@ async function editarVenta(idOriginal, datos) {
         TIPOS_EVENTOS.VENTA_EDITADA,
         "editar"
     );
+});
 }
 
 async function importarVentas(registros) {

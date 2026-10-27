@@ -388,14 +388,15 @@ function construirPeriodosEsperados(contexto, fechaCorteEfectiva) {
 function firmaDetallesDepreciacion(detalles) {
     return detalles.map(function(detalle) { return claveDepreciacionAutomatica(detalle.codigoActivo, detalle.periodo) + "@" + Number(detalle.montoCentavos || 0); }).sort().join(";");
 }
-function movimientoConsolidadoCoincide(movimiento, periodo, activos) {
+function movimientoConsolidadoCoincide(movimiento, periodo, activos, cuentasPorCodigo) {
     const meta = movimiento && movimiento.depreciacionAutomatica;
     if (!meta || meta.consolidada !== true || String(meta.periodo || "") !== String(periodo) || !Array.isArray(meta.detalles)) return false;
     const esperados = activos.map(function(activo) {
         const cuota = obtenerCuotaVerificadaPorPeriodo(activo, periodo);
         return { codigoActivo: activo.codigoActivo, periodo, montoCentavos: cuota.montoCentavos };
     });
-    return firmaDetallesDepreciacion(detallesDepreciacionMovimiento(movimiento)) === firmaDetallesDepreciacion(esperados);
+    const esperado = construirPartidaDepreciacionConsolidada(periodo, activos, movimiento.numero, ultimoDiaPeriodoISO(periodo), cuentasPorCodigo);
+return firmaDetallesDepreciacion(detallesDepreciacionMovimiento(movimiento)) === firmaDetallesDepreciacion(esperados) && estadoPersistidoCoincide(esperado.partida, movimiento.partida) && esperado.fecha === movimiento.fecha && esperado.referencia === movimiento.referencia;
 }
 function planificarDepreciacionesPendientes(contexto, fechaCorteEfectiva) {
     const nuevos = [];
@@ -408,7 +409,7 @@ function planificarDepreciacionesPendientes(contexto, fechaCorteEfectiva) {
         const existentes = contexto.movimientos.filter(function(movimiento) {
             return esMovimientoDepreciacionAutomatica(movimiento) && periodoDepreciacionMovimiento(movimiento) === periodo;
         });
-        if (existentes.length === 1 && movimientoConsolidadoCoincide(existentes[0], periodo, activos)) {
+        if (existentes.length === 1 && movimientoConsolidadoCoincide(existentes[0], periodo, activos, contexto.cuentasPorCodigo)) {
             omitidas += activos.length;
             return;
         }
@@ -425,19 +426,16 @@ function planificarDepreciacionesPendientes(contexto, fechaCorteEfectiva) {
 
 /* FASE 09 — Persistencia aislada, migración de partidas antiguas y verificación posterior. */
 function verificarPersistenciaConsolidada(nuevos, verificados) {
-    return nuevos.filter(function(nuevo) {
-        const meta = nuevo.depreciacionAutomatica;
-        const guardado = verificados.find(function(movimiento) { return Number(movimiento.id) === Number(nuevo.id); });
-        if (!guardado || !guardado.depreciacionAutomatica || guardado.depreciacionAutomatica.consolidada !== true) return true;
-        return firmaDetallesDepreciacion(detallesDepreciacionMovimiento(guardado)) !== firmaDetallesDepreciacion(detallesDepreciacionMovimiento(nuevo)) || String(guardado.depreciacionAutomatica.periodo) !== String(meta.periodo);
-    });
+const porId = new Map(verificados.map(function(movimiento) { return [movimiento.id, movimiento]; }));
+return nuevos.filter(function(nuevo) { return !estadoPersistidoCoincide(nuevo, porId.get(nuevo.id)); });
 }
 async function eliminarDepreciacionesParaReemplazo(movimientos) {
     for (const movimiento of movimientos) await eliminarMovimientoBD(movimiento.id);
 }
 async function revertirSincronizacionDepreciacion(nuevos, reemplazados) {
-    for (const movimiento of nuevos) await eliminarMovimientoBD(movimiento.id).catch(function() {});
-    if (reemplazados.length) await guardarMovimientosBD(reemplazados).catch(function() {});
+const cambios = nuevos.map(function(m) { return { almacen: ALMACEN_MOVIMIENTOS, accion: "eliminar", clave: m.id }; });
+reemplazados.forEach(function(m) { cambios.push({ almacen: ALMACEN_MOVIMIENTOS, accion: "guardar", valor: m }); });
+await aplicarCambioContableBD(cambios);
 }
 /* ALGORITMIA 5 FASES — sincronización/contabilización de depreciación. */
 function fase1EntradaSincronizacionDepreciacion(fechaCorte) {
@@ -457,26 +455,24 @@ function fase3ProcesarSincronizacionDepreciacion(validacion) {
     return { ...validacion, plan: plan };
 }
 async function fase4PersistirSincronizacionDepreciacion(proceso) {
-    if (!proceso.plan.nuevos.length) return proceso;
-    try {
-        await eliminarDepreciacionesParaReemplazo(proceso.plan.reemplazar);
-        await guardarMovimientosBD(proceso.plan.nuevos);
-        return proceso;
-    } catch (error) {
-        await revertirSincronizacionDepreciacion(proceso.plan.nuevos, proceso.plan.reemplazar);
-        throw error;
-    }
+const cambios = proceso.plan.reemplazar.map(function(m) { return { almacen: ALMACEN_MOVIMIENTOS, accion: "eliminar", clave: m.id }; });
+proceso.plan.nuevos.forEach(function(m) { cambios.push({ almacen: ALMACEN_MOVIMIENTOS, accion: "agregar", valor: m }); });
+await aplicarCambioContableBD(cambios, proceso.contexto.movimientos);
+return proceso;
 }
 async function fase5VerificarSincronizacionDepreciacion(proceso) {
     const plan = proceso.plan;
-    if (plan.nuevos.length) {
-        const verificados = await obtenerMovimientosBD();
-        const faltantes = verificarPersistenciaConsolidada(plan.nuevos, verificados);
-        if (faltantes.length) {
-            await revertirSincronizacionDepreciacion(plan.nuevos, plan.reemplazar);
-            throw new Error("La fase 5 no pudo verificar todas las partidas consolidadas de depreciación.");
-        }
-    }
+    // Inicio fase 5 — Incluir también períodos omitidos por idempotencia.
+try {
+const idsReemplazados = new Set(plan.reemplazar.map(function(m) { return m.id; }));
+const esperados = proceso.contexto.movimientos.filter(function(m) { return esMovimientoDepreciacionAutomatica(m) && !idsReemplazados.has(m.id); }).concat(plan.nuevos);
+const verificados = await obtenerMovimientosBD();
+if (verificarPersistenciaConsolidada(esperados, verificados).length) throw new Error("La fase 5 no pudo verificar todas las partidas consolidadas de depreciación.");
+} catch (error) {
+await revertirSincronizacionDepreciacion(plan.nuevos, plan.reemplazar);
+throw error;
+}
+// Fin fase 5
     const resultado = {
         creadas: plan.nuevos.length,
         reemplazadas: plan.reemplazar.length,
@@ -491,6 +487,7 @@ async function fase5VerificarSincronizacionDepreciacion(proceso) {
     return resultado;
 }
 async function sincronizarDepreciacionAutomatica(fechaCorte) {
+return ejecutarConBloqueoContable(async function() {
     try {
         // FASE 1 — Entrada/corte efectivo.
         const entrada = fase1EntradaSincronizacionDepreciacion(fechaCorte);
@@ -506,5 +503,6 @@ async function sincronizarDepreciacionAutomatica(fechaCorte) {
         registrarTelemetriaDepreciacion("Sincronizar depreciación consolidada", true);
         throw error;
     }
+});
 }
 

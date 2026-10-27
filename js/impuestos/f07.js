@@ -102,7 +102,7 @@ function generarCSVF07VentasConsumidorFinal(ventas, periodo) {
 /* ALGORITMIA 5 FASES — cierre mensual de IVA. */
 function fase1EntradaCierreIVA(periodo) {
     const valor = String(periodo || "").trim();
-    if (!/^\d{4}-\d{2}$/.test(valor)) throw new Error("Seleccione un período válido.");
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(valor)) throw new Error("Seleccione un período válido.");
     return { periodo: valor, referencia: "IVA-CIERRE-" + valor };
 }
 async function fase2ValidarCierreIVA(entrada) {
@@ -142,17 +142,22 @@ function fase3ProcesarCierreIVA(validacion) {
     return { ...validacion, movimiento: movimiento };
 }
 async function fase4PersistirCierreIVA(proceso) {
-    await guardarMovimientoBD(proceso.movimiento);
+    await aplicarCambioContableBD([{ almacen: ALMACEN_MOVIMIENTOS, accion: "agregar", valor: proceso.movimiento }], proceso.movimientos);
     return proceso;
 }
 async function fase5VerificarCierreIVA(proceso) {
-    const movimientos = await obtenerMovimientosBD();
-    const guardado = movimientos.find(function(m) { return Number(m.id) === Number(proceso.movimiento.id); });
-    if (!guardado || String(guardado.referencia || "") !== String(proceso.movimiento.referencia)) {
-        await eliminarMovimientoBD(proceso.movimiento.id).catch(function() {});
-        throw new Error("La fase 5 no pudo verificar la persistencia del cierre de IVA.");
-    }
-    validarPartidaComercial(guardado);
+    let guardado;
+// Inicio fase 5 — Verificar contenido completo, no solo existencia/referencia.
+try {
+const movimientos = await obtenerMovimientosBD();
+guardado = movimientos.find(function(m) { return Number(m.id) === Number(proceso.movimiento.id); });
+if (!estadoPersistidoCoincide(proceso.movimiento, guardado)) throw new Error("La fase 5 no pudo verificar la persistencia del cierre de IVA.");
+validarPartidaComercial(guardado);
+} catch (error) {
+await eliminarMovimientoBD(proceso.movimiento.id);
+throw error;
+}
+// Fin fase 5
     if (typeof publicarEventoContable === "function" && typeof TIPOS_EVENTOS !== "undefined" && TIPOS_EVENTOS.IVA_CERRADO) {
         await publicarEventoContable(TIPOS_EVENTOS.IVA_CERRADO, "iva", proceso.entrada.periodo, {
             periodo: proceso.entrada.periodo,
@@ -166,6 +171,7 @@ async function fase5VerificarCierreIVA(proceso) {
     return { movimiento: guardado, resumen: proceso.resumen };
 }
 async function contabilizarCierreIVA(periodo) {
+return ejecutarConBloqueoContable(async function() {
     // FASE 1 — Entrada normalizada.
     const entrada = fase1EntradaCierreIVA(periodo);
     // FASE 2 — Validación de período, idempotencia e IVA.
@@ -176,4 +182,5 @@ async function contabilizarCierreIVA(periodo) {
     await fase4PersistirCierreIVA(proceso);
     // FASE 5 — Relectura, verificación y evento EDA.
     return fase5VerificarCierreIVA(proceso);
+});
 }

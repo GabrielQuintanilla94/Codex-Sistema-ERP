@@ -34,6 +34,7 @@ async function cargarActivosDepreciacion() {
 
 /* FASE UI 03 — Años: solo poblar el selector. */
 function prepararAniosDepreciacion() {
+    if (!anioDepreciacion) return;
     const actual = Number(fechaCorteDepreciacion.value.slice(0, 4)) || new Date().getFullYear();
     let minimo = actual;
     let maximo = actual;
@@ -95,6 +96,7 @@ function construirHtmlFilaDepreciacion(fila) {
     `;
 }
 function renderizarFilasDepreciacion(filas) {
+    if (!cuerpoDepreciacion) return;
     cuerpoDepreciacion.innerHTML = "";
     filas.forEach(function(fila) {
         const tr = document.createElement("tr");
@@ -116,17 +118,21 @@ function renderizarPortafolioDepreciacion(filas) {
 
 function renderizarTotalesDepreciacion(filas) {
     const totales = calcularTotalesDepreciacion(filas);
-    totalActivosDepreciacion.textContent = String(filas.length);
-    totalCostoDepreciacion.textContent = dineroDepreciacion(totales.costo);
-    totalAcumuladaDepreciacion.textContent = dineroDepreciacion(totales.acumulada);
-    totalLibrosDepreciacion.textContent = dineroDepreciacion(totales.libros);
+    if (totalActivosDepreciacion) totalActivosDepreciacion.textContent = String(filas.length);
+    if (totalCostoDepreciacion) totalCostoDepreciacion.textContent = dineroDepreciacion(totales.costo);
+    if (totalAcumuladaDepreciacion) totalAcumuladaDepreciacion.textContent = dineroDepreciacion(totales.acumulada);
+    if (totalLibrosDepreciacion) totalLibrosDepreciacion.textContent = dineroDepreciacion(totales.libros);
+    const matrizActivos = document.getElementById("matriz-total-activos");
+    const matrizAcumulada = document.getElementById("matriz-total-acumulada");
+    if (matrizActivos) matrizActivos.textContent = String(filas.length);
+    if (matrizAcumulada) matrizAcumulada.textContent = dineroDepreciacion(totales.acumulada);
     sinActivosDepreciacion.style.display = filas.length ? "none" : "block";
 }
 function renderizarDepreciacion() {
     const fechaSistema = fechaLocalDepreciacion(); /* Snapshot único compartido por todas las filas. */
     const fechaCorte = fechaCorteDepreciacion.value;
-    const anio = Number(anioDepreciacion.value);
-    encabezadoMesesDepreciacion.innerHTML = MESES_DEPRECIACION.map(function(mes) { return `<th>${mes}</th>`; }).join("");
+    const anio = Number(anioDepreciacion ? anioDepreciacion.value : fechaCorte.slice(0, 4));
+    if (encabezadoMesesDepreciacion) encabezadoMesesDepreciacion.innerHTML = MESES_DEPRECIACION.map(function(mes) { return `<th>${mes}</th>`; }).join("");
     const filas = calcularFilasDepreciacionParaRender(fechaCorte, anio, fechaSistema);
     renderizarFilasDepreciacion(filas);
     renderizarTotalesDepreciacion(filas);
@@ -176,9 +182,9 @@ async function iniciarDepreciacionUI() {
     await actualizarDepreciacionUI();
 }
 document.getElementById("actualizar-depreciacion").addEventListener("click", actualizarDepreciacionUI);
-botonContabilizarDepreciacion.addEventListener("click", contabilizarDepreciacionAlCorte);
-fechaCorteDepreciacion.addEventListener("change", function() { prepararAniosDepreciacion(); renderizarDepreciacion(); });
-anioDepreciacion.addEventListener("change", renderizarDepreciacion);
+if (botonContabilizarDepreciacion) botonContabilizarDepreciacion.addEventListener("click", contabilizarDepreciacionAlCorte);
+fechaCorteDepreciacion.addEventListener("change", actualizarDepreciacionUI);
+if (anioDepreciacion) anioDepreciacion.addEventListener("change", renderizarDepreciacion);
 iniciarDepreciacionUI().catch(function(error) {
     mensajeDepreciacion.textContent = error.message;
     mensajeDepreciacion.className = "mensaje-movimiento error";

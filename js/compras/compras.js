@@ -178,6 +178,7 @@ async function fase2ValidarCompra(entrada, idExcluir) {
     const tercero = terceros.find(function(t) { return String(t.nrc) === String(entrada.nrc); });
     if (!tercero) throw new Error("El NRC del proveedor no existe en el catálogo de terceros.");
     const canonica = { ...entrada, proveedor: tercero.razonSocial, nrc: tercero.nrc, giro: tercero.giro || "" };
+    validarPeriodosEditablesIVA(canonica.fecha, canonica.fecha, movimientos);
     const id = crearIdOperacion("COMPRA", canonica.fecha, canonica.documento, canonica.nrc);
     const duplicada = compras.some(function(c) { return String(c.id) !== String(idExcluir || "") && String(c.id) === String(id); });
     if (duplicada) throw new Error("La compra ya fue registrada para ese proveedor y documento.");
@@ -188,17 +189,26 @@ function fase3ProcesarCompra(validacion, movimientosBase, marcaTiempo) {
     return construirCompra(validacion.canonica, movimientosBase || validacion.movimientos, marcaTiempo || validacion.canonica.creadoEn || new Date().toISOString());
 }
 async function fase4PersistirCompra(procesada, movimientosPrevios) {
+    procesada.planRecuperacion = { movimientosOriginales: movimientosPrevios };
     await persistirOperacionComercial("COMPRA", procesada.registro, procesada.movimiento, movimientosPrevios);
     return procesada;
 }
 async function fase5VerificarCompra(procesada, movimientosEsperados, tipoEvento, accion) {
-    const ok = await verificarEstadoComercialPersistido("COMPRA", procesada.registro, procesada.movimiento, movimientosEsperados);
-    if (!ok) throw new Error("La compra fue persistida, pero la fase 5 no pudo verificar registro, partida e inventario.");
+    // Inicio fase 5 — Relectura completa; recuperar antes de cualquier evento.
+try {
+const ok = await verificarEstadoComercialPersistido("COMPRA", procesada.registro, procesada.movimiento, movimientosEsperados);
+if (!ok) throw new Error("La fase 5 no pudo verificar registro, partida e inventario de compras.");
+} catch (error) {
+await recuperarVerificacionComercial("COMPRA", procesada);
+throw error;
+}
+// Fin fase 5
     if (tipoEvento) await publicarEventoComercialSeguro(tipoEvento, "COMPRA", procesada.registro, accion);
     return procesada.registro;
 }
 
 async function registrarCompra(datos) {
+return ejecutarConBloqueoContable(async function() {
     // FASE 1 — Entrada y normalización.
     const entrada = fase1EntradaCompra(datos);
     // FASE 2 — Validación de tercero, duplicidad e invariantes matemáticos.
@@ -214,9 +224,11 @@ async function registrarCompra(datos) {
         TIPOS_EVENTOS.COMPRA_REGISTRADA,
         "registrar"
     );
+});
 }
 
 async function editarCompra(idOriginal, datos) {
+return ejecutarConBloqueoContable(async function() {
     // FASE 1 — Entrada y normalización.
     const entrada = fase1EntradaCompra(datos);
     // FASE 2 — Validación contra estado actual y período IVA.
@@ -229,6 +241,7 @@ async function editarCompra(idOriginal, datos) {
     procesada.movimiento.editadoEn = marcaEdicion;
     construirMapaInventarioDesdeMovimientos(plan.movimientosRestantes.concat([procesada.movimiento]));
     // FASE 4 — Sustitución persistente con recuperación automática.
+    procesada.planRecuperacion = plan;
     await persistirEdicionComercial(plan, procesada.registro, procesada.movimiento);
     // FASE 5 — Relectura/verificación completa y evento EDA posterior.
     return fase5VerificarCompra(
@@ -237,6 +250,7 @@ async function editarCompra(idOriginal, datos) {
         TIPOS_EVENTOS.COMPRA_EDITADA,
         "editar"
     );
+});
 }
 
 async function importarCompras(registros) {

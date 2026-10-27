@@ -449,3 +449,51 @@ function obtenerVentasBD() {
 function eliminarVentaBD(id) {
     return ejecutarOperacionBD(ALMACEN_VENTAS, "readwrite", "Eliminar venta", function(almacen) { return almacen.delete(id); });
 }
+
+// Inicio fase 5 — Igualdad de datos persistidos, independiente del orden de propiedades.
+function estadoPersistidoCoincide(esperado, actual) {
+if (Object.is(esperado, actual)) return true;
+if (!esperado || !actual || typeof esperado !== "object" || typeof actual !== "object") return false;
+if (Array.isArray(esperado) !== Array.isArray(actual)) return false;
+const claves = Object.keys(esperado);
+return claves.length === Object.keys(actual).length && claves.every(function(clave) {
+return Object.prototype.hasOwnProperty.call(actual, clave) && estadoPersistidoCoincide(esperado[clave], actual[clave]);
+});
+}
+// Fin fase 5
+// Inicio fase 4 — Un único commit IndexedDB para todos los almacenes afectados.
+function aplicarCambioContableBD(cambios, movimientosEsperados) {
+return new Promise(function(resolve, reject) {
+if (!baseDatos) return reject(new Error("La base de datos no está abierta."));
+const almacenes = Array.from(new Set([ALMACEN_MOVIMIENTOS].concat(cambios.map(function(cambio) { return cambio.almacen; }))));
+const transaccion = baseDatos.transaction(almacenes, "readwrite");
+let fallo;
+transaccion.oncomplete = function() { registrarTelemetriaBD("Transacción contable", false); resolve(true); };
+transaccion.onabort = function() { registrarTelemetriaBD("Transacción contable", true); reject(fallo || transaccion.error || new Error("Transacción contable abortada.")); };
+transaccion.onerror = function() { fallo = fallo || transaccion.error; };
+const solicitud = transaccion.objectStore(ALMACEN_MOVIMIENTOS).getAll();
+solicitud.onsuccess = function() {
+try {
+if (movimientosEsperados) {
+const porId = new Map(movimientosEsperados.map(function(m) { return [m.id, m]; }));
+if (solicitud.result.length !== porId.size || !solicitud.result.every(function(m) { return estadoPersistidoCoincide(porId.get(m.id), m); })) {
+throw new Error("El estado contable cambió en otra operación. Vuelva a intentar con datos actualizados.");
+}
+}
+cambios.forEach(function(cambio) {
+const almacen = transaccion.objectStore(cambio.almacen);
+if (cambio.accion === "limpiar") almacen.clear();
+else if (cambio.accion === "eliminar") almacen.delete(cambio.clave);
+else if (cambio.accion === "agregar") almacen.add(cambio.valor);
+else if (cambio.accion === "guardar") almacen.put(cambio.valor);
+else throw new Error("Cambio contable no permitido.");
+});
+} catch (error) { fallo = error; transaccion.abort(); }
+};
+});
+}
+// Fin fase 4
+function ejecutarConBloqueoContable(ejecutar) {
+if (!navigator.locks) return Promise.reject(new Error("El navegador requiere Web Locks para registrar operaciones contables de forma segura."));
+return navigator.locks.request("libro-diario-mutacion", ejecutar);
+}

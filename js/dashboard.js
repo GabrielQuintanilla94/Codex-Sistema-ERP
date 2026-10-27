@@ -2,6 +2,7 @@ const DASHBOARD_PERIODO_STORAGE = "lc:dashboard:periodo";
 let dashboardPeriodoSeleccionado = "";
 let dashboardDatos = { cuentas: [], movimientos: [], compras: [], ventas: [] };
 let dashboardRefrescoEnCurso = null;
+let dashboardRefrescoPendiente = false;
 
 function dashboardDinero(valor) {
     return new Intl.NumberFormat("es-SV", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(Number(valor || 0));
@@ -159,13 +160,17 @@ function dashboardRenderPeriodo(periodo) {
     dashboardRenderActividad(comprasPeriodo, ventasPeriodo);
 }
 async function dashboardRefrescarDesdeBD() {
-    if (dashboardRefrescoEnCurso) return dashboardRefrescoEnCurso;
-    dashboardRefrescoEnCurso = (async function() {
-        await dashboardCargarDatos();
-        const periodo = dashboardPeriodoSeleccionado || dashboardElegirPeriodoInicial(dashboardDatos.compras, dashboardDatos.ventas);
-        dashboardRenderPeriodo(periodo);
-    })();
-    try { await dashboardRefrescoEnCurso; } finally { dashboardRefrescoEnCurso = null; }
+dashboardRefrescoPendiente = true;
+if (dashboardRefrescoEnCurso) return dashboardRefrescoEnCurso;
+dashboardRefrescoEnCurso = (async function() {
+do {
+dashboardRefrescoPendiente = false;
+await dashboardCargarDatos();
+const periodo = dashboardPeriodoSeleccionado || dashboardElegirPeriodoInicial(dashboardDatos.compras, dashboardDatos.ventas);
+dashboardRenderPeriodo(periodo);
+} while (dashboardRefrescoPendiente);
+})();
+try { await dashboardRefrescoEnCurso; } finally { dashboardRefrescoEnCurso = null; }
 }
 function dashboardSuscribirEDA() {
     if (typeof suscribirEventoContable !== "function" || typeof TIPOS_EVENTOS === "undefined") return;

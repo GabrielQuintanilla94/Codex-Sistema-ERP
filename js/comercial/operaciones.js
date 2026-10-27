@@ -62,9 +62,7 @@ function compararInventarioPersistidoConEsperado(esperado, persistido) {
     for (const [sku, estadoEsperado] of esperado.estados.entries()) {
         const actual = mapaPersistido.get(String(sku));
         if (!actual) return false;
-        if (Number(actual.cantidad) !== Number(estadoEsperado.cantidad)) return false;
-        if (Number(actual.valorInventarioCentavos) !== Number(estadoEsperado.valorInventarioCentavos)) return false;
-        if (Number(actual.costoPromedioCentavos) !== Number(estadoEsperado.costoPromedioCentavos)) return false;
+        if (!estadoPersistidoCoincide(estadoEsperado, actual)) return false;
     }
     return true;
 }
@@ -77,6 +75,7 @@ async function verificarEstadoComercialPersistido(tipo, registroEsperado, movimi
     const movimiento = movimientosBD.find(function(item) { return Number(item.id) === Number(movimientoEsperado.id); });
     const registro = registrosBD.find(function(item) { return String(item.id) === String(registroEsperado.id); });
     if (!movimiento || !registro || Number(registro.movimientoId) !== Number(movimientoEsperado.id)) return false;
+    if (!estadoPersistidoCoincide(registroEsperado, registro) || !estadoPersistidoCoincide(movimientoEsperado, movimiento)) return false;
     const esperadoInventario = construirMapaInventarioDesdeMovimientos(movimientosEsperados || []);
     return compararInventarioPersistidoConEsperado(esperadoInventario, inventarioBD);
 }
@@ -97,20 +96,10 @@ async function publicarEventoComercialSeguro(tipoEvento, tipoEntidad, registro, 
     );
 }
 async function persistirOperacionComercial(tipo, registro, movimiento, movimientosPrevios) {
-    validarPartidaComercial(movimiento);
-    await guardarMovimientoBD(movimiento);
-    try {
-        if (tipo === "COMPRA") await guardarCompraBD(registro);
-        else await guardarVentaBD(registro);
-        await reconstruirInventarioDesdeMovimientos((movimientosPrevios || []).concat([movimiento]));
-    } catch (error) {
-        await eliminarMovimientoBD(movimiento.id).catch(function() {});
-        if (tipo === "COMPRA") await eliminarCompraBD(registro.id).catch(function() {});
-        else await eliminarVentaBD(registro.id).catch(function() {});
-        await reconstruirInventarioDesdeMovimientos(movimientosPrevios || []).catch(function() {});
-        throw error;
-    }
-    return true;
+validarPartidaComercial(movimiento);
+const cambios = [{ almacen: ALMACEN_MOVIMIENTOS, accion: "agregar", valor: movimiento }, { almacen: tipo === "COMPRA" ? ALMACEN_COMPRAS : ALMACEN_VENTAS, accion: "agregar", valor: registro }];
+await aplicarCambioContableBD(cambios.concat(cambiosInventarioComercial((movimientosPrevios || []).concat([movimiento]))), movimientosPrevios || []);
+return true;
 }
 
 function obtenerPeriodoComercial(fecha) {
@@ -146,50 +135,16 @@ function prepararPlanEdicionComercial(tipo, idOriginal, registros, movimientos, 
     };
 }
 async function persistirEdicionComercial(plan, registroNuevo, movimientoNuevo) {
-    if (!plan) throw new Error("No existe un plan de edición válido.");
-    validarPartidaComercial(movimientoNuevo);
-    const movimientosFinales = plan.movimientosRestantes.concat([movimientoNuevo]);
-    construirMapaInventarioDesdeMovimientos(movimientosFinales);
-    let guardoMovimientoNuevo = false;
-    let guardoRegistroNuevo = false;
-    try {
-        await eliminarMovimientoBD(plan.movimientoAnterior.id);
-        if (plan.tipo === "COMPRA") await eliminarCompraBD(plan.registroAnterior.id);
-        else await eliminarVentaBD(plan.registroAnterior.id);
-
-        await guardarMovimientoBD(movimientoNuevo);
-        guardoMovimientoNuevo = true;
-        if (plan.tipo === "COMPRA") await guardarCompraBD(registroNuevo);
-        else await guardarVentaBD(registroNuevo);
-        guardoRegistroNuevo = true;
-        await reconstruirInventarioDesdeMovimientos(movimientosFinales);
-
-        const [movs, regs] = await Promise.all([
-            obtenerMovimientosBD(),
-            plan.tipo === "COMPRA" ? obtenerComprasBD() : obtenerVentasBD()
-        ]);
-        const movOk = movs.some(function(m) { return Number(m.id) === Number(movimientoNuevo.id); });
-        const regOk = regs.some(function(r) { return String(r.id) === String(registroNuevo.id) && Number(r.movimientoId) === Number(movimientoNuevo.id); });
-        if (!movOk || !regOk) throw new Error("La edición no pudo verificarse completamente.");
-        return registroNuevo;
-    } catch (error) {
-        if (guardoRegistroNuevo) {
-            if (plan.tipo === "COMPRA") await eliminarCompraBD(registroNuevo.id).catch(function() {});
-            else await eliminarVentaBD(registroNuevo.id).catch(function() {});
-        }
-        if (guardoMovimientoNuevo) await eliminarMovimientoBD(movimientoNuevo.id).catch(function() {});
-        const movsActuales = await obtenerMovimientosBD().catch(function() { return []; });
-        if (!movsActuales.some(function(m) { return Number(m.id) === Number(plan.movimientoAnterior.id); })) {
-            await guardarMovimientoBD(plan.movimientoAnterior).catch(function() {});
-        }
-        const regsActuales = plan.tipo === "COMPRA" ? await obtenerComprasBD().catch(function() { return []; }) : await obtenerVentasBD().catch(function() { return []; });
-        if (!regsActuales.some(function(r) { return String(r.id) === String(plan.registroAnterior.id); })) {
-            if (plan.tipo === "COMPRA") await guardarCompraBD(plan.registroAnterior).catch(function() {});
-            else await guardarVentaBD(plan.registroAnterior).catch(function() {});
-        }
-        await reconstruirInventarioDesdeMovimientos(plan.movimientosOriginales).catch(function() {});
-        throw error;
-    }
+if (!plan) throw new Error("No existe un plan de edición válido.");
+validarPartidaComercial(movimientoNuevo);
+const almacen = plan.tipo === "COMPRA" ? ALMACEN_COMPRAS : ALMACEN_VENTAS;
+await aplicarCambioContableBD([
+{ almacen: ALMACEN_MOVIMIENTOS, accion: "eliminar", clave: plan.movimientoAnterior.id },
+{ almacen: almacen, accion: "eliminar", clave: plan.registroAnterior.id },
+{ almacen: ALMACEN_MOVIMIENTOS, accion: "agregar", valor: movimientoNuevo },
+{ almacen: almacen, accion: "agregar", valor: registroNuevo }
+].concat(cambiosInventarioComercial(plan.movimientosRestantes.concat([movimientoNuevo]))), plan.movimientosOriginales);
+return registroNuevo;
 }
 
 function validarEliminacionComercial(tipo, id, registros, movimientos) {
@@ -218,18 +173,12 @@ function validarEliminacionComercial(tipo, id, registros, movimientos) {
 }
 
 async function restaurarOperacionComercialEliminada(plan) {
-    if (!plan) return;
-    const movimientosActuales = await obtenerMovimientosBD().catch(function() { return []; });
-    const idsActuales = new Set((movimientosActuales || []).map(function(m) { return Number(m.id); }));
-    if (!idsActuales.has(Number(plan.movimiento.id))) await guardarMovimientoBD(plan.movimiento);
-    if (plan.cierreIVA && !idsActuales.has(Number(plan.cierreIVA.id))) await guardarMovimientoBD(plan.cierreIVA);
-    const registros = plan.tipo === "COMPRA" ? await obtenerComprasBD() : await obtenerVentasBD();
-    const existeRegistro = (registros || []).some(function(item) { return String(item.id) === String(plan.registro.id); });
-    if (!existeRegistro) {
-        if (plan.tipo === "COMPRA") await guardarCompraBD(plan.registro);
-        else await guardarVentaBD(plan.registro);
-    }
-    await reconstruirInventarioDesdeMovimientos(plan.movimientosOriginales || []);
+const cambios = [
+{ almacen: ALMACEN_MOVIMIENTOS, accion: "guardar", valor: plan.movimiento },
+{ almacen: plan.tipo === "COMPRA" ? ALMACEN_COMPRAS : ALMACEN_VENTAS, accion: "guardar", valor: plan.registro }
+];
+if (plan.cierreIVA) cambios.push({ almacen: ALMACEN_MOVIMIENTOS, accion: "guardar", valor: plan.cierreIVA });
+await aplicarCambioContableBD(cambios.concat(cambiosInventarioComercial(plan.movimientosOriginales)));
 }
 
 /* ALGORITMIA 5 FASES — eliminación comercial. */
@@ -253,33 +202,26 @@ function fase3ProcesarEliminacionComercial(plan) {
     return { plan: plan, inventarioEsperado: inventarioEsperado };
 }
 async function fase4PersistirEliminacionComercial(proceso) {
-    const plan = proceso.plan;
-    try {
-        if (plan.cierreIVA) await eliminarMovimientoBD(plan.cierreIVA.id);
-        await eliminarMovimientoBD(plan.movimiento.id);
-        if (plan.tipo === "COMPRA") await eliminarCompraBD(plan.registro.id);
-        else await eliminarVentaBD(plan.registro.id);
-        await reconstruirInventarioDesdeMovimientos(plan.movimientosRestantes);
-        return proceso;
-    } catch (error) {
-        await restaurarOperacionComercialEliminada(plan).catch(function() {});
-        throw error;
-    }
+const plan = proceso.plan;
+const cambios = [
+{ almacen: ALMACEN_MOVIMIENTOS, accion: "eliminar", clave: plan.movimiento.id },
+{ almacen: plan.tipo === "COMPRA" ? ALMACEN_COMPRAS : ALMACEN_VENTAS, accion: "eliminar", clave: plan.registro.id }
+];
+if (plan.cierreIVA) cambios.push({ almacen: ALMACEN_MOVIMIENTOS, accion: "eliminar", clave: plan.cierreIVA.id });
+await aplicarCambioContableBD(cambios.concat(cambiosInventarioComercial(plan.movimientosRestantes)), plan.movimientosOriginales);
+return proceso;
 }
 async function fase5VerificarEliminacionComercial(proceso) {
     const plan = proceso.plan;
-    const [movimientosVerificacion, registrosVerificacion, inventarioVerificacion] = await Promise.all([
-        obtenerMovimientosBD(),
-        plan.tipo === "COMPRA" ? obtenerComprasBD() : obtenerVentasBD(),
-        obtenerInventariosBD()
-    ]);
-    const persisteMovimiento = movimientosVerificacion.some(function(m) { return Number(m.id) === Number(plan.movimiento.id); });
-    const persisteRegistro = registrosVerificacion.some(function(item) { return String(item.id) === String(plan.registro.id); });
-    const inventarioOk = compararInventarioPersistidoConEsperado(proceso.inventarioEsperado, inventarioVerificacion);
-    if (persisteMovimiento || persisteRegistro || !inventarioOk) {
-        await restaurarOperacionComercialEliminada(plan).catch(function() {});
-        throw new Error("La fase 5 no pudo verificar completamente la eliminación comercial.");
-    }
+    try {
+const [movimientosVerificacion, registrosVerificacion, inventarioVerificacion] = await Promise.all([obtenerMovimientosBD(), plan.tipo === "COMPRA" ? obtenerComprasBD() : obtenerVentasBD(), obtenerInventariosBD()]);
+const persisteMovimiento = movimientosVerificacion.some(function(m) { return Number(m.id) === Number(plan.movimiento.id) || (plan.cierreIVA && Number(m.id) === Number(plan.cierreIVA.id)); });
+const persisteRegistro = registrosVerificacion.some(function(item) { return String(item.id) === String(plan.registro.id); });
+if (persisteMovimiento || persisteRegistro || !compararInventarioPersistidoConEsperado(proceso.inventarioEsperado, inventarioVerificacion)) throw new Error("La fase 5 no pudo verificar completamente la eliminación comercial.");
+} catch (error) {
+await restaurarOperacionComercialEliminada(plan);
+throw error;
+}
     const resultado = {
         eliminado: true,
         tipo: plan.tipo,
@@ -292,6 +234,7 @@ async function fase5VerificarEliminacionComercial(proceso) {
     return resultado;
 }
 async function eliminarOperacionComercial(tipo, id) {
+return ejecutarConBloqueoContable(async function() {
     // FASE 1 — Entrada.
     const entrada = fase1EntradaEliminacionComercial(tipo, id);
     // FASE 2 — Validación y obtención del plan actual.
@@ -302,6 +245,7 @@ async function eliminarOperacionComercial(tipo, id) {
     await fase4PersistirEliminacionComercial(proceso);
     // FASE 5 — Relectura, verificación e EDA.
     return fase5VerificarEliminacionComercial(proceso);
+});
 }
 
 function eliminarCompra(id) { return eliminarOperacionComercial("COMPRA", id); }
@@ -313,4 +257,20 @@ async function eliminarOperacionComercialPorMovimiento(tipo, movimientoId) {
     const registro = (registros || []).find(function(item) { return Number(item.movimientoId) === Number(movimientoId); });
     if (!registro) throw new Error("No se encontró la operación comercial asociada a la partida seleccionada.");
     return eliminarOperacionComercial(tipoNormalizado, registro.id);
+}
+
+function cambiosInventarioComercial(movimientos) {
+return cambiosInventarioDesdeMovimientos(movimientos);
+}
+async function recuperarVerificacionComercial(tipo, procesada) {
+const plan = procesada.planRecuperacion;
+const cambios = [
+{ almacen: ALMACEN_MOVIMIENTOS, accion: "eliminar", clave: procesada.movimiento.id },
+{ almacen: tipo === "COMPRA" ? ALMACEN_COMPRAS : ALMACEN_VENTAS, accion: "eliminar", clave: procesada.registro.id }
+];
+if (plan.registroAnterior) {
+cambios.push({ almacen: ALMACEN_MOVIMIENTOS, accion: "guardar", valor: plan.movimientoAnterior });
+cambios.push({ almacen: tipo === "COMPRA" ? ALMACEN_COMPRAS : ALMACEN_VENTAS, accion: "guardar", valor: plan.registroAnterior });
+}
+await aplicarCambioContableBD(cambios.concat(cambiosInventarioComercial(plan.movimientosOriginales)));
 }

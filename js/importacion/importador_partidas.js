@@ -131,9 +131,21 @@ async function fase4DecidirImportacion(resultado) {
         resultado.validas.length === 0) {
         return [];
     }
-    let siguienteId = siguienteIdMovimiento();
-    const nuevasPartidas = [];
-    const contexto = movimientos.slice();
+    const movimientosPersistidos = await obtenerMovimientosBD();
+const numeros = new Set(movimientosPersistidos.map(function(m) { return String(m.numero || "").toLowerCase(); }));
+const referencias = new Set(movimientosPersistidos.map(function(m) { return String(m.referencia || "").toLowerCase(); }).filter(Boolean));
+for (const partida of resultado.validas) {
+const m = partida.movimiento;
+const numero = String(m.numero || "").toLowerCase();
+const referencia = String(m.referencia || "").toLowerCase();
+if (numeros.has(numero) || (referencia && referencias.has(referencia))) throw new Error("La partida o referencia ya existe en IndexedDB. Vuelva a prevalidar el archivo.");
+numeros.add(numero);
+if (referencia) referencias.add(referencia);
+}
+let siguienteId = movimientosPersistidos.reduce(function(max, m) { return Math.max(max, Number(m.id) || 0); }, 0) + 1;
+const nuevasPartidas = [];
+nuevasPartidas.movimientosOriginales = movimientosPersistidos;
+const contexto = movimientosPersistidos.slice();
     const partidasOrdenadas = resultado.validas.slice().sort(function(a, b) {
         return String(a.movimiento.fecha || "").localeCompare(String(b.movimiento.fecha || "")) || String(a.movimiento.numero || "").localeCompare(String(b.movimiento.numero || ""));
     });
@@ -155,7 +167,8 @@ async function fase4DecidirImportacion(resultado) {
     nuevasPartidas.forEach(function(movimiento) {
         validarPartidaDoble(movimiento, cuentasPorCodigo);
     });
-    await guardarMovimientosBD(nuevasPartidas);
+    const cambios = nuevasPartidas.map(function(m) { return { almacen: ALMACEN_MOVIMIENTOS, accion: "agregar", valor: m }; });
+await aplicarCambioContableBD(cambios.concat(cambiosInventarioDesdeMovimientos(contexto)), movimientosPersistidos);
     actualizarTelemetriaImportacion("4. Decisión", "Lote almacenado");
     return nuevasPartidas;
 }
@@ -171,27 +184,20 @@ G. Verificación: lectura independiente de todos los movimientos.
 H. Telemetría: actualizar partidas procesadas o rechazadas.
 */
 async function fase5VerificarImportacion(nuevasPartidas) {
-    const guardados = await obtenerMovimientosBD();
-    const porId = new Map(guardados.map(function(movimiento) {
-        return [movimiento.id, movimiento];
-    }));
-    const verificadas = nuevasPartidas.every(function(movimiento) {
-        const guardado = porId.get(movimiento.id);
-        return guardado &&
-            guardado.numero === movimiento.numero &&
-            Array.isArray(guardado.partida) &&
-            guardado.partida.length === movimiento.partida.length;
-    });
-    if (!verificadas) {
-        for (const movimiento of nuevasPartidas) {
-            await eliminarMovimientoBD(movimiento.id);
-        }
-        actualizarTelemetriaImportacion("5. Verificación", "Lote revertido", true);
-        throw new Error("No fue posible verificar todas las partidas. El lote fue revertido.");
-    }
-    telemetriaImportacion.procesadas += nuevasPartidas.length;
-    actualizarTelemetriaImportacion("5. Verificación", "Lote verificado");
-    return true;
+try {
+const guardados = await obtenerMovimientosBD();
+const porId = new Map(guardados.map(function(m) { return [m.id, m]; }));
+if (!nuevasPartidas.every(function(m) { return estadoPersistidoCoincide(m, porId.get(m.id)); })) throw new Error("No fue posible verificar todas las partidas.");
+await verificarInventarioDesdeMovimientos(nuevasPartidas.movimientosOriginales.concat(nuevasPartidas));
+} catch (error) {
+const cambios = nuevasPartidas.map(function(m) { return { almacen: ALMACEN_MOVIMIENTOS, accion: "eliminar", clave: m.id }; });
+await aplicarCambioContableBD(cambios.concat(cambiosInventarioDesdeMovimientos(nuevasPartidas.movimientosOriginales)));
+actualizarTelemetriaImportacion("5. Verificación", "Lote revertido", true);
+throw error;
+}
+telemetriaImportacion.procesadas += nuevasPartidas.length;
+actualizarTelemetriaImportacion("5. Verificación", "Lote verificado");
+return true;
 }
 async function recibirArchivoCSV(archivo) {
     const datos = fase1EntradaImportacion(archivo);
@@ -301,6 +307,7 @@ workerPartidas.onerror = function() {
     mostrarMensajeImportacion("El Web Worker no pudo procesar el archivo.", true);
 };
 async function importarPartidasConfirmadas() {
+return ejecutarConBloqueoContable(async function() {
     confirmarImportacion.disabled = true;
     mostrarMensajeImportacion("Guardando partidas...", false);
     try {
@@ -310,15 +317,6 @@ async function importarPartidasConfirmadas() {
             return;
         }
         await fase5VerificarImportacion(nuevasPartidas);
-        try {
-            await reconstruirInventarioDesdeMovimientos(movimientos.concat(nuevasPartidas));
-        } catch (errorInventario) {
-            for (const movimiento of nuevasPartidas) {
-                await eliminarMovimientoBD(movimiento.id).catch(function() {});
-            }
-            await reconstruirInventarioDesdeMovimientos(movimientos).catch(function() {});
-            throw errorInventario;
-        }
         await publicarEventoContable(
             TIPOS_EVENTOS.PARTIDAS_IMPORTADAS,
             "lote",
@@ -330,7 +328,8 @@ async function importarPartidasConfirmadas() {
                 })
             }
         );
-        movimientos.push(...nuevasPartidas);
+        sincronizarMovimientos(await obtenerMovimientosBD());
+        resultadoImportacion = null;
         buscador.value = "";
         filtroTipo.value = "Todos";
         mostrarMovimientos();
@@ -340,6 +339,7 @@ async function importarPartidasConfirmadas() {
         actualizarTelemetriaImportacion("F. Recuperación", error.message, true);
         mostrarMensajeImportacion(error.message || "No fue posible guardar las partidas.", true);
     }
+});
 }
 zonaCSV.addEventListener("dragover", function(evento) {
     evento.preventDefault();

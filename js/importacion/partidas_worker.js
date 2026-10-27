@@ -90,8 +90,8 @@ function convertirFecha(valor) {
         partes = fecha.split("-").map(Number);
     } else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(fecha)) {
         const partesEntrada = fecha.split("/").map(Number);
-        // Los CSV del proyecto usan M/D/YYYY (por ejemplo 9/1/2026 = 1 de septiembre de 2026).
-        partes = [partesEntrada[2], partesEntrada[0], partesEntrada[1]];
+        // Fecha local del ERP: D/M/YYYY; los archivos sin ambigüedad pueden usar ISO.
+        partes = [partesEntrada[2], partesEntrada[1], partesEntrada[0]];
     } else {
         return "";
     }

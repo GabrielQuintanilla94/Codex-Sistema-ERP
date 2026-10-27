@@ -240,7 +240,9 @@ function activarAcordeones() {
 }
 
 async function eliminarPartida(evento) {
+return ejecutarConBloqueoContable(async function() {
     const id = Number(evento.currentTarget.dataset.id);
+    sincronizarMovimientos(await obtenerMovimientosBD());
     const movimiento = movimientos.find(function(item) {
         return Number(item.id) === id;
     });
@@ -251,17 +253,17 @@ async function eliminarPartida(evento) {
     );
     if (!confirmada) return;
     try {
-        await eliminarMovimientoBD(id);
-        const verificacion = await obtenerMovimientoBD(id);
-        if (verificacion) throw new Error("La partida continúa almacenada.");
-        const restantes = movimientos.filter(function(item) { return Number(item.id) !== id; });
-        try {
-            await reconstruirInventarioDesdeMovimientos(restantes);
-        } catch (errorInventario) {
-            await guardarMovimientoBD(movimiento).catch(function() {});
-            await reconstruirInventarioDesdeMovimientos(movimientos).catch(function() {});
-            throw errorInventario;
-        }
+        if (["Compra", "Venta", "Depreciación"].includes(movimiento.origen) || esMovimientoDepreciacionAutomatica(movimiento)) throw new Error("Esta partida automática debe gestionarse desde su módulo de origen.");
+const previos = await obtenerMovimientosBD();
+const restantes = previos.filter(function(item) { return Number(item.id) !== id; });
+await aplicarCambioContableBD([{ almacen: ALMACEN_MOVIMIENTOS, accion: "eliminar", clave: id }].concat(cambiosInventarioDesdeMovimientos(restantes)), previos);
+try {
+if (await obtenerMovimientoBD(id)) throw new Error("La partida continúa almacenada.");
+await verificarInventarioDesdeMovimientos(restantes);
+} catch (error) {
+await aplicarCambioContableBD([{ almacen: ALMACEN_MOVIMIENTOS, accion: "guardar", valor: movimiento }].concat(cambiosInventarioDesdeMovimientos(previos)));
+throw error;
+}
         await publicarEventoContable(
             TIPOS_EVENTOS.PARTIDA_ELIMINADA,
             "movimiento",
@@ -279,6 +281,7 @@ async function eliminarPartida(evento) {
     } catch (error) {
         window.alert("No fue posible eliminar la partida: " + error.message);
     }
+});
 }
 
 async function cargarJSON(ruta) {
@@ -765,14 +768,13 @@ F. Recuperación: propagar el error sin modificar la colección visible.
 G. Verificación: esperar la finalización de la transacción.
 H. Telemetría: registrar la decisión de persistencia.
 */
-async function fase4DecidirMovimiento(movimiento) {
-    const cuentasPorCodigo = new Map(cuentasDisponibles.map(function(cuenta) {
-        return [cuenta.codigo, cuenta];
-    }));
-    validarPartidaDoble(movimiento, cuentasPorCodigo);
-    await guardarMovimientoBD(movimiento);
-    actualizarTelemetriaMovimiento("4. Decisión", "Partida almacenada");
-    return true;
+async function fase4DecidirMovimiento(movimiento, movimientosPrevios) {
+const cuentasPorCodigo = new Map(cuentasDisponibles.map(function(cuenta) { return [cuenta.codigo, cuenta]; }));
+validarPartidaDoble(movimiento, cuentasPorCodigo);
+const previos = movimientosPrevios || await obtenerMovimientosBD();
+await aplicarCambioContableBD([{ almacen: ALMACEN_MOVIMIENTOS, accion: "agregar", valor: movimiento }].concat(cambiosInventarioDesdeMovimientos(previos.concat([movimiento]))), previos);
+actualizarTelemetriaMovimiento("4. Decisión", "Partida almacenada");
+return true;
 }
 /*
 FASE 5
@@ -786,30 +788,21 @@ G. Verificación: lectura independiente mediante obtenerMovimientoBD().
 H. Telemetría: actualizar procesadas, rechazadas y resultado.
 */
 async function fase5VerificarMovimiento(movimiento) {
-    const verificado = await obtenerMovimientoBD(movimiento.id);
-    const coincide = Boolean(verificado) &&
-        verificado.numero === movimiento.numero &&
-        verificado.fecha === movimiento.fecha &&
-        Array.isArray(verificado.partida) &&
-        verificado.partida.length === movimiento.partida.length;
-    if (!coincide) {
-        await eliminarMovimientoBD(movimiento.id);
-        actualizarTelemetriaMovimiento("5. Verificación", "Registro revertido", true);
-        throw new Error("La partida no pudo verificarse y fue revertida.");
-    }
-    actualizarTelemetriaMovimiento("5. Verificación", "Partida verificada", false);
-    return true;
+const verificado = await obtenerMovimientoBD(movimiento.id);
+if (!estadoPersistidoCoincide(movimiento, verificado)) throw new Error("La partida persistida no coincide con el estado esperado.");
+actualizarTelemetriaMovimiento("5. Verificación", "Partida verificada", false);
+return true;
 }
 async function guardarYVerificarMovimiento(movimiento) {
-    await fase4DecidirMovimiento(movimiento);
-    await fase5VerificarMovimiento(movimiento);
-    try {
-        await reconstruirInventarioDesdeMovimientos(movimientos.concat([movimiento]));
-    } catch (errorInventario) {
-        await eliminarMovimientoBD(movimiento.id).catch(function() {});
-        await reconstruirInventarioDesdeMovimientos(movimientos).catch(function() {});
-        throw errorInventario;
-    }
+    const previos = await obtenerMovimientosBD();
+await fase4DecidirMovimiento(movimiento, previos);
+try {
+await fase5VerificarMovimiento(movimiento);
+await verificarInventarioDesdeMovimientos(previos.concat([movimiento]));
+} catch (error) {
+await aplicarCambioContableBD([{ almacen: ALMACEN_MOVIMIENTOS, accion: "eliminar", clave: movimiento.id }].concat(cambiosInventarioDesdeMovimientos(previos)));
+throw error;
+}
     await publicarEventoContable(
         TIPOS_EVENTOS.PARTIDA_REGISTRADA,
         "movimiento",
@@ -823,31 +816,23 @@ async function guardarYVerificarMovimiento(movimiento) {
 }
 
 async function actualizarYVerificarMovimiento(movimiento, original) {
+if (["Compra", "Venta", "Depreciación", "Cierre IVA"].includes(original.origen) || esMovimientoDepreciacionAutomatica(original)) throw new Error("La partida automática debe editarse desde su módulo de origen.");
     const cuentasPorCodigo = new Map(cuentasDisponibles.map(function(cuenta) {
         return [cuenta.codigo, cuenta];
     }));
     validarPartidaDoble(movimiento, cuentasPorCodigo);
-    await actualizarMovimientoBD(movimiento);
-    const verificado = await obtenerMovimientoBD(movimiento.id);
-    const coincide = Boolean(verificado) &&
-        verificado.numero === movimiento.numero &&
-        verificado.fecha === movimiento.fecha &&
-        Array.isArray(verificado.partida) &&
-        verificado.partida.length === movimiento.partida.length;
-    if (!coincide) {
-        await actualizarMovimientoBD(original).catch(function() {});
-        throw new Error("La edición no pudo verificarse y fue revertida.");
-    }
-    const reconstruccion = movimientos
-        .filter(function(item) { return Number(item.id) !== Number(movimiento.id); })
-        .concat([movimiento]);
-    try {
-        await reconstruirInventarioDesdeMovimientos(reconstruccion);
-    } catch (errorInventario) {
-        await actualizarMovimientoBD(original).catch(function() {});
-        await reconstruirInventarioDesdeMovimientos(movimientos).catch(function() {});
-        throw errorInventario;
-    }
+    const previos = await obtenerMovimientosBD();
+const actual = previos.find(function(m) { return m.id === original.id; });
+if (!estadoPersistidoCoincide(original, actual)) throw new Error("La partida cambió. Vuelva a abrir la edición.");
+const reconstruccion = previos.filter(function(m) { return m.id !== movimiento.id; }).concat([movimiento]);
+await aplicarCambioContableBD([{ almacen: ALMACEN_MOVIMIENTOS, accion: "guardar", valor: movimiento }].concat(cambiosInventarioDesdeMovimientos(reconstruccion)), previos);
+try {
+await fase5VerificarMovimiento(movimiento);
+await verificarInventarioDesdeMovimientos(reconstruccion);
+} catch (error) {
+await aplicarCambioContableBD([{ almacen: ALMACEN_MOVIMIENTOS, accion: "guardar", valor: original }].concat(cambiosInventarioDesdeMovimientos(previos)));
+throw error;
+}
     await publicarEventoContable(
         TIPOS_EVENTOS.PARTIDA_EDITADA,
         "movimiento",
@@ -859,8 +844,10 @@ async function actualizarYVerificarMovimiento(movimiento, original) {
 }
 
 async function registrarMovimiento(evento) {
-    evento.preventDefault();
+evento.preventDefault();
+return ejecutarConBloqueoContable(async function() {
     mensajeMovimiento.textContent = "";
+    sincronizarMovimientos(await obtenerMovimientosBD());
     const datos = recibirDatosMovimiento();
     const error = validarDatosMovimiento(datos);
     if (error) {
@@ -899,6 +886,7 @@ async function registrarMovimiento(evento) {
         actualizarTelemetriaMovimiento("F. Recuperación", errorGuardado.message, true);
         mostrarErrorFormulario(errorGuardado.message);
     }
+});
 }
 
 async function iniciarLibroDiario() {

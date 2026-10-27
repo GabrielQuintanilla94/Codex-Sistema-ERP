@@ -32,7 +32,7 @@ function normalizarTipoInventario(tipo) {
     throw new Error("El tipo de inventario debe ser Entrada o Salida.");
 }
 
-function crearEstadoInventarioVacio(sku, descripcion) {
+function crearEstadoInventarioVacio(sku, descripcion, marcaTiempo) {
     return {
         sku: normalizarSKU(sku),
         descripcion: String(descripcion || "").trim(),
@@ -40,7 +40,7 @@ function crearEstadoInventarioVacio(sku, descripcion) {
         valorInventarioCentavos: 0,
         costoPromedioCentavos: 0,
         metodoValuacion: METODO_VALUACION_INVENTARIO,
-        actualizadoEn: new Date().toISOString()
+        actualizadoEn: String(marcaTiempo || "")
     };
 }
 
@@ -84,7 +84,7 @@ function calcularEntradaPorValor(estadoActual, datos) {
         valorInventarioCentavos: nuevoValorCentavos,
         costoPromedioCentavos: nuevoPromedioCentavos,
         metodoValuacion: METODO_VALUACION_INVENTARIO,
-        actualizadoEn: new Date().toISOString()
+        actualizadoEn: String(datos.actualizadoEn || actual.actualizadoEn || "")
     };
     verificarEstadoInventarioTresNiveles(resultado, "Entrada " + sku);
     return resultado;
@@ -109,7 +109,7 @@ function calcularSalidaPorCantidad(estadoActual, datos) {
             cantidad: cantidadFinal,
             valorInventarioCentavos: valorFinalCentavos,
             costoPromedioCentavos: cantidadFinal === 0 ? 0 : promedioCentavos,
-            actualizadoEn: new Date().toISOString()
+            actualizadoEn: String(datos.actualizadoEn || estadoActual.actualizadoEn || "")
         },
         costoSalidaCentavos: costoSalidaCentavos
     };
@@ -131,6 +131,7 @@ function construirMapaInventarioDesdeMovimientos(movimientosEntrada) {
     const estados = new Map();
     const historial = [];
     ordenarMovimientosInventario(movimientosEntrada).forEach(function(movimiento) {
+        const marcaTiempo = movimiento.editadoEn || movimiento.actualizadoEn || movimiento.creadoEn || movimiento.fecha;
         (movimiento.partida || []).forEach(function(linea, indice) {
             if (String(linea.codigo || "") !== CUENTA_INVENTARIO_MATERIALES) return;
             const tipo = normalizarTipoInventario(linea.tipoInventario);
@@ -148,7 +149,8 @@ function construirMapaInventarioDesdeMovimientos(movimientosEntrada) {
                     sku: sku,
                     descripcion: descripcion,
                     cantidad: cantidad,
-                    valorTotal: inventarioADolares(debeCentavos)
+                    valorTotal: inventarioADolares(debeCentavos),
+                    actualizadoEn: marcaTiempo
                 });
                 estados.set(sku, nuevo);
                 historial.push({
@@ -164,7 +166,7 @@ function construirMapaInventarioDesdeMovimientos(movimientosEntrada) {
                 });
             } else {
                 if (debeCentavos !== 0) throw new Error("La salida de inventario " + sku + " no puede registrarse al Debe.");
-                const calculo = calcularSalidaPorCantidad(estados.get(sku), { sku: sku, cantidad: cantidad });
+                const calculo = calcularSalidaPorCantidad(estados.get(sku), { sku: sku, cantidad: cantidad, actualizadoEn: marcaTiempo });
                 const diferencia = Math.abs(haberCentavos - calculo.costoSalidaCentavos);
                 if (haberCentavos > 0 && diferencia > 1) {
                     throw new Error(
@@ -280,3 +282,18 @@ async function obtenerResumenInventario() {
         valorTotal: inventarioADolares(valorTotalCentavos)
     };
 }
+
+// Inicio fase 4 — Inventario y partidas comparten la transacción del orquestador.
+function cambiosInventarioDesdeMovimientos(movimientosEntrada) {
+const estados = construirMapaInventarioDesdeMovimientos(movimientosEntrada).estados;
+return [{ almacen: ALMACEN_INVENTARIO, accion: "limpiar" }].concat(Array.from(estados.values(), function(estado) { return { almacen: ALMACEN_INVENTARIO, accion: "guardar", valor: estado }; }));
+}
+// Fin fase 4
+// Inicio fase 5 — Relectura independiente del inventario completo.
+async function verificarInventarioDesdeMovimientos(movimientosEntrada) {
+const esperados = construirMapaInventarioDesdeMovimientos(movimientosEntrada).estados;
+const actuales = await obtenerInventariosBD();
+if (actuales.length !== esperados.size || !actuales.every(function(actual) { return estadoPersistidoCoincide(esperados.get(actual.sku), actual); })) throw new Error("El inventario persistido no coincide con los movimientos esperados.");
+return true;
+}
+// Fin fase 5
