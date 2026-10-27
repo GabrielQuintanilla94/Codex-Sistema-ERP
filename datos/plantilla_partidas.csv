@@ -1,0 +1,6 @@
+﻿NumeroPartida,Fecha,Referencia,Concepto,CodigoCuenta,DescripcionLinea,TipoInventario,SKU,CantidadInventario,Debe,Haber,FechaDisponibleUso,ValorResidual
+JE-1001,2026-09-01,FC-1001,Compra de láminas,1104,Lámina de acero,Entrada,LAM-001,100,1400.00,0,,
+JE-1001,2026-09-01,FC-1001,Compra de láminas,2101,Proveedor,,,,0,1400.00,,
+JE-1002,2026-09-05,FV-1001,Venta de láminas,1103,Cliente,,,,500.00,0,,
+JE-1002,2026-09-05,FV-1001,Venta de láminas,4101,Venta de materiales,,,,0,500.00,,
+JE-1002,2026-09-05,FV-1001,Venta de láminas,1104,Salida de láminas,Salida,LAM-001,20,0,0,,

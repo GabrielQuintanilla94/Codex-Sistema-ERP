@@ -1,0 +1,301 @@
+[
+  {
+    "codigo": "1000",
+    "nombre": "Activo",
+    "padre": null,
+    "naturaleza": "Deudora",
+    "permiteMovimientos": false
+  },
+  {
+    "codigo": "1100",
+    "nombre": "Activo corriente",
+    "padre": "1000",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": false
+  },
+  {
+    "codigo": "1101",
+    "nombre": "Caja",
+    "padre": "1100",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "1102",
+    "nombre": "Bancos",
+    "padre": "1100",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "1103",
+    "nombre": "Cuentas por cobrar",
+    "padre": "1100",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "1104",
+    "nombre": "Inventario de materiales",
+    "padre": "1100",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "1105",
+    "nombre": "IVA Crédito Fiscal",
+    "padre": "1100",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "1106",
+    "nombre": "Remanente de crédito fiscal",
+    "padre": "1100",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "1200",
+    "nombre": "Activo Fijo",
+    "padre": "1000",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": false
+  },
+  {
+    "codigo": "1201",
+    "nombre": "Edificios",
+    "padre": "1200",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": true,
+    "categoriaActivoFijo": "Edificios",
+    "vidaUtilAnios": 20,
+    "tasaFiscalAnual": 0.05
+  },
+  {
+    "codigo": "1202",
+    "nombre": "Maquinaria",
+    "padre": "1200",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": true,
+    "categoriaActivoFijo": "Maquinaria",
+    "vidaUtilAnios": 5,
+    "tasaFiscalAnual": 0.2
+  },
+  {
+    "codigo": "1203",
+    "nombre": "Automóviles",
+    "padre": "1200",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": true,
+    "categoriaActivoFijo": "Automóviles",
+    "vidaUtilAnios": 4,
+    "tasaFiscalAnual": 0.25
+  },
+  {
+    "codigo": "1204",
+    "nombre": "Otros bienes muebles",
+    "padre": "1200",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": true,
+    "categoriaActivoFijo": "Otros bienes muebles",
+    "vidaUtilAnios": 2,
+    "tasaFiscalAnual": 0.5
+  },
+  {
+    "codigo": "1300",
+    "nombre": "Depreciación acumulada",
+    "padre": "1000",
+    "naturaleza": "Acreedora",
+    "permiteMovimientos": false
+  },
+  {
+    "codigo": "1301",
+    "nombre": "Depreciación acumulada - Edificios",
+    "padre": "1300",
+    "naturaleza": "Acreedora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "1302",
+    "nombre": "Depreciación acumulada - Maquinaria",
+    "padre": "1300",
+    "naturaleza": "Acreedora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "1303",
+    "nombre": "Depreciación acumulada - Automóviles",
+    "padre": "1300",
+    "naturaleza": "Acreedora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "1304",
+    "nombre": "Depreciación acumulada - Otros bienes muebles",
+    "padre": "1300",
+    "naturaleza": "Acreedora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "2000",
+    "nombre": "Pasivo",
+    "padre": null,
+    "naturaleza": "Acreedora",
+    "permiteMovimientos": false
+  },
+  {
+    "codigo": "2100",
+    "nombre": "Pasivo corriente",
+    "padre": "2000",
+    "naturaleza": "Acreedora",
+    "permiteMovimientos": false
+  },
+  {
+    "codigo": "2101",
+    "nombre": "Cuentas por pagar",
+    "padre": "2100",
+    "naturaleza": "Acreedora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "2102",
+    "nombre": "IVA Débito Fiscal",
+    "padre": "2100",
+    "naturaleza": "Acreedora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "2103",
+    "nombre": "IVA por pagar",
+    "padre": "2100",
+    "naturaleza": "Acreedora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "3000",
+    "nombre": "Patrimonio",
+    "padre": null,
+    "naturaleza": "Acreedora",
+    "permiteMovimientos": false
+  },
+  {
+    "codigo": "3100",
+    "nombre": "Capital aportado",
+    "padre": "3000",
+    "naturaleza": "Acreedora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "3200",
+    "nombre": "Resultados acumulados",
+    "padre": "3000",
+    "naturaleza": "Acreedora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "4000",
+    "nombre": "Ingresos",
+    "padre": null,
+    "naturaleza": "Acreedora",
+    "permiteMovimientos": false
+  },
+  {
+    "codigo": "4100",
+    "nombre": "Ventas",
+    "padre": "4000",
+    "naturaleza": "Acreedora",
+    "permiteMovimientos": false
+  },
+  {
+    "codigo": "4101",
+    "nombre": "Ventas de materiales",
+    "padre": "4100",
+    "naturaleza": "Acreedora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "5000",
+    "nombre": "Costo de ventas",
+    "padre": null,
+    "naturaleza": "Deudora",
+    "permiteMovimientos": false
+  },
+  {
+    "codigo": "5001",
+    "nombre": "Materiales",
+    "padre": "5000",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "5101",
+    "nombre": "Aduanas",
+    "padre": "5000",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "6000",
+    "nombre": "Gastos de operación",
+    "padre": null,
+    "naturaleza": "Deudora",
+    "permiteMovimientos": false
+  },
+  {
+    "codigo": "6001",
+    "nombre": "Energía eléctrica",
+    "padre": "6000",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "6002",
+    "nombre": "Internet y comunicaciones",
+    "padre": "6000",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "6003",
+    "nombre": "Transporte y entregas",
+    "padre": "6000",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "6200",
+    "nombre": "Gasto por depreciación",
+    "padre": "6000",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": false
+  },
+  {
+    "codigo": "6201",
+    "nombre": "Depreciación - Edificios",
+    "padre": "6200",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "6202",
+    "nombre": "Depreciación - Maquinaria",
+    "padre": "6200",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "6203",
+    "nombre": "Depreciación - Automóviles",
+    "padre": "6200",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": true
+  },
+  {
+    "codigo": "6204",
+    "nombre": "Depreciación - Otros bienes muebles",
+    "padre": "6200",
+    "naturaleza": "Deudora",
+    "permiteMovimientos": true
+  }
+]

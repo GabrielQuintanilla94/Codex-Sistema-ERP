@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de cuentas</title>
+    <link rel="stylesheet" href="css/estilos.css?v=30">
+</head>
+<body>
+<div class="app-shell">
+<aside class="barra-lateral" aria-label="Navegación principal">
+        <a class="marca-app" href="index.html" title="Inicio"><span>LC</span><strong>Contable</strong></a>
+        <nav class="navegacion-lateral"></nav>
+    </aside>
+    <main class="contenedor app-main contenedor-catalogo">
+<section class="encabezado-pagina encabezado-catalogo">
+            <div>
+                <span class="etiqueta-version">CATÁLOGO CONTABLE</span>
+                <h1>Catálogo de cuentas</h1>
+                <p>Listado jerárquico de cuentas y subcuentas.</p>
+            </div>
+
+            <button id="abrir-formulario-cuenta" class="boton-nueva-cuenta" type="button">
+                + Nueva cuenta
+            </button>
+        </section>
+
+        <section class="panel-matriz-cuentas">
+            <header class="encabezado-matriz-cuentas">
+                <div>
+                    <h2>Plan de cuentas</h2>
+                    <p>Las subcuentas aparecen desplazadas según su nivel.</p>
+                </div>
+            </header>
+
+            <p id="mensaje-catalogo" class="mensaje-catalogo"></p>
+
+            <div class="contenedor-tabla-cuentas">
+                <table class="tabla-catalogo-cuentas">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Clasificación</th>
+                            <th>Naturaleza</th>
+                            <th>Tipo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="arbol-cuentas"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+    <dialog id="dialogo-cuenta" class="dialogo-cuenta">
+        <form id="formulario-cuenta">
+            <header class="encabezado-dialogo-cuenta">
+                <div>
+                    <span class="etiqueta-version">CUENTA CONTABLE</span>
+                    <h2>Nueva cuenta</h2>
+                    <p>Complete los valores requeridos para crear la cuenta.</p>
+                </div>
+
+                <button id="cerrar-dialogo-cuenta" class="boton-cerrar" type="button">
+                    ×
+                </button>
+            </header>
+
+            <div class="campos-cuenta">
+                <label>
+                    Código
+                    <input id="codigo" maxlength="4" placeholder="Ej. 5104" required>
+                </label>
+
+                <label>
+                    Nombre
+                    <input id="nombre" maxlength="80" placeholder="Ej. Gasto de internet" required>
+                </label>
+
+                <label>
+                    Cuenta padre
+                    <select id="cuenta-padre">
+                        <option value="">Sin cuenta padre</option>
+                    </select>
+                </label>
+
+                <label>
+                    Naturaleza
+                    <select id="naturaleza">
+                        <option value="Deudora">Deudora</option>
+                        <option value="Acreedora">Acreedora</option>
+                    </select>
+                </label>
+
+                <label class="casilla campo-completo-cuenta">
+                    <input id="permite-movimientos" type="checkbox">
+                    Permite movimientos contables
+                </label>
+            </div>
+
+            <p id="mensaje-formulario-cuenta" class="mensaje-catalogo"></p>
+
+            <footer class="acciones-dialogo-cuenta">
+                <button id="cancelar-dialogo-cuenta" class="boton-secundario" type="button">
+                    Cancelar
+                </button>
+
+                <button class="boton-principal" type="submit">
+                    Guardar cuenta
+                </button>
+            </footer>
+        </form>
+    </dialog>
+
+    <script src="js/base_datos.js?v=11"></script>
+    <script src="js/motor_contable.js?v=11"></script>
+    <script src="js/eventos/tipos_eventos.js?v=50"></script>
+    <script src="js/eventos/bus_eventos.js?v=11"></script>
+    <script src="js/eventos/proyeccion_contable.js?v=11"></script>
+    <script src="js/catalogo/grafo_cuentas.js?v=11"></script>
+    <script src="js/catalogo/algoritmia_cuentas.js?v=11"></script>
+    <script src="js/catalogo/catalogo_ui.js?v=11"></script>
+    <script src="js/nav.js?v=2"></script>
+</body>
+</html>

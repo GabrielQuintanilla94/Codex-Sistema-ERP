@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar partida manual</title>
+    <link rel="stylesheet" href="css/estilos.css?v=41">
+    <style>
+        /* Garantiza que las acciones de importación sean visibles aun si el CSS global cambia. */
+        #dialogo-importar .acciones-importacion-visibles {
+            display: flex !important;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            position: static !important;
+            margin: 16px 0 !important;
+            padding: 12px 0 !important;
+            border-top: 1px solid #dce2ea;
+            border-bottom: 1px solid #dce2ea;
+            background: #fff !important;
+            box-shadow: none !important;
+        }
+        #dialogo-importar .acciones-importacion-visibles button {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+        }
+        #dialogo-importar #confirmar-importacion:not(:disabled) {
+            min-width: 180px;
+        }
+    </style>
+</head>
+<body>
+<div class="app-shell">
+<aside class="barra-lateral" aria-label="Navegación principal">
+        <a class="marca-app" href="index.html" title="Inicio"><span>LC</span><strong>Contable</strong></a>
+        <nav class="navegacion-lateral"></nav>
+    </aside>
+
+    <main class="contenedor app-main">
+        <section class="encabezado-pagina">
+            <div>
+                <span class="etiqueta-version">CAPTURA CONTABLE</span>
+                <h1>Registrar partida manual</h1>
+                <p>Registre una partida contable o importe partidas desde CSV. La consulta de movimientos se realiza desde Reportes.</p>
+            </div>
+            <div class="acciones-encabezado">
+                <button id="boton-importar" class="boton-secundario-azul" type="button">⇧ Importar CSV</button>
+                <button id="boton-agregar" type="button">＋ Nueva partida</button>
+            </div>
+        </section>
+        <section class="manual-entry-grid">
+            <article class="panel-reporte manual-action-card">
+                <div class="manual-action-icon">＋</div>
+                <div><span class="dashboard-kicker">CAPTURA INDIVIDUAL</span><h2>Nueva partida</h2><p>Registre ajustes, gastos, cobros, pagos u otras operaciones que no provengan de Compras o Ventas.</p></div>
+                <button type="button" class="boton-primario manual-trigger" data-target="boton-agregar">Crear partida</button>
+            </article>
+            <article class="panel-reporte manual-action-card">
+                <div class="manual-action-icon">⇧</div>
+                <div><span class="dashboard-kicker">CARGA MASIVA</span><h2>Importar desde CSV</h2><p>Valide múltiples partidas antes de guardarlas. Las rechazadas no se contabilizan.</p></div>
+                <button type="button" class="boton-secundario-azul manual-trigger" data-target="boton-importar">Abrir importador</button>
+            </article>
+            <aside class="panel-reporte manual-help-card">
+                <div class="titulo-reporte"><div><span class="dashboard-kicker">FLUJO CONTABLE</span><h2>Después de guardar</h2></div></div>
+                <div class="impact-list"><span><b>1.</b> Valida Debe = Haber</span><span><b>2.</b> Guarda en el Libro Diario</span><span><b>3.</b> Actualiza Balanza y reportes</span><span><b>4.</b> Reconstruye inventario/PPE si aplica</span></div>
+                <a class="link-contextual" href="reportes.html">Consultar reportes →</a>
+            </aside>
+        </section>
+        <p class="nota">Las partidas guardadas estarán disponibles inmediatamente en la Balanza de comprobación y en el detalle por cuenta.</p>
+        <div hidden aria-hidden="true">
+            <input id="buscador" type="search">
+            <select id="filtro-tipo"><option value="Todos">Todos</option><option value="Manual">Manual</option><option value="CSV">CSV</option></select>
+            <div id="lista-movimientos"></div>
+            <p id="sin-resultados"></p>
+            <span id="resumen-entradas"></span>
+            <span id="resumen-salidas"></span>
+            <span id="resumen-neto"></span>
+        </div>
+    </main>
+</div>
+
+    <dialog id="dialogo-movimiento" class="dialogo-movimiento dialogo-partida">
+        <form id="formulario-movimiento">
+            <div class="encabezado-dialogo">
+                <div>
+                    <span class="etiqueta-version">CAPTURA CONTABLE</span>
+                    <h2>Nueva partida de diario</h2>
+                </div>
+                <button id="cerrar-dialogo" class="boton-cerrar" type="button" aria-label="Cerrar">×</button>
+            </div>
+
+            <div class="encabezado-partida">
+                <label>
+                    Fecha
+                    <input id="movimiento-fecha" type="date" required>
+                </label>
+                <label>
+                    Número de partida
+                    <input id="movimiento-numero" maxlength="20" placeholder="Ej. JE-0005" required>
+                </label>
+                <label>
+                    Referencia
+                    <input id="movimiento-referencia" maxlength="30" placeholder="Ej. AJ-005">
+                </label>
+                <label class="campo-completo">
+                    Concepto general
+                    <input id="movimiento-concepto" maxlength="100" placeholder="Descripción general de la partida" required>
+                </label>
+            </div>
+
+            <p class="nota">Solo las cuentas auxiliares (`permiteMovimientos`) pueden seleccionarse. Para 1201–1204, use la descripción como nombre del activo e indique fecha disponible para uso y valor residual.</p>
+
+            <div class="tabla-captura-contenedor">
+                <table class="tabla-captura">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Cuenta</th>
+                            <th>Descripción de línea</th>
+                            <th>Inv.</th>
+                            <th>SKU</th>
+                            <th>Unidades</th>
+                            <th>Disponible uso</th>
+                            <th>Residual</th>
+                            <th>Debe</th>
+                            <th>Haber</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="lineas-partida"></tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="8">Totales</td>
+                            <td id="total-debe-formulario">$0.00</td>
+                            <td id="total-haber-formulario">$0.00</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="barra-partida">
+                <button id="agregar-linea" class="boton-agregar-linea" type="button">＋ Agregar línea</button>
+                <div id="estado-balance" class="estado-balance pendiente">
+                    Diferencia: <strong id="diferencia-formulario">$0.00</strong>
+                </div>
+            </div>
+
+            <p id="mensaje-movimiento" class="mensaje-movimiento"></p>
+
+            <div class="acciones-dialogo">
+                <button id="cancelar-movimiento" class="boton-secundario" type="button">Cancelar</button>
+                <button class="boton-secundario" type="submit" name="accion" value="nueva">Guardar y nueva</button>
+                <button class="boton-principal" type="submit" name="accion" value="cerrar">Guardar y cerrar</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="dialogo-importar" class="dialogo-movimiento dialogo-importar">
+        <div class="encabezado-dialogo">
+            <div>
+                <span class="etiqueta-version">IMPORTACIÓN MASIVA</span>
+                <h2>Importar partidas desde CSV</h2>
+                <p>Una partida sencilla o múltiples partidas con cualquier cantidad de líneas.</p>
+            </div>
+            <button id="cerrar-importador" class="boton-cerrar" type="button" aria-label="Cerrar">×</button>
+        </div>
+
+        <div id="zona-csv" class="zona-csv">
+            <strong>Arrastre aquí el archivo CSV</strong>
+            <span>o</span>
+            <label class="boton-seleccionar">
+                Seleccionar archivo
+                <input id="archivo-csv" type="file" accept=".csv,text/csv">
+            </label>
+            <small>Requeridas: NumeroPartida, Fecha, Referencia, Concepto, CodigoCuenta, DescripcionLinea, Debe, Haber. Opcionales PPE: FechaDisponibleUso, ValorResidual.</small>
+            <a href="datos/plantilla_partidas.csv" download>Descargar plantilla CSV</a>
+        </div>
+
+        <p id="mensaje-importacion" class="mensaje-movimiento"></p>
+
+        <section id="resumen-importacion" class="resumen-importacion oculto">
+            <article><span>Partidas</span><strong id="csv-total">0</strong></article>
+            <article><span>Válidas</span><strong id="csv-validas">0</strong></article>
+            <article><span>Rechazadas</span><strong id="csv-rechazadas">0</strong></article>
+            <article><span>Líneas</span><strong id="csv-lineas">0</strong></article>
+        </section>
+
+        <div class="acciones-dialogo acciones-importacion-visibles">
+            <button id="cancelar-importacion" class="boton-secundario" type="button">Cancelar</button>
+            <button id="confirmar-importacion" class="boton-principal" type="button" disabled>Importar partidas</button>
+        </div>
+
+        <div id="vista-previa-csv" class="vista-previa-csv oculto"></div>
+    </dialog>
+
+    <script src="js/base_datos.js?v=12"></script>
+    <script src="js/inventario/inventario_costos.js?v=4"></script>
+    <script src="js/depreciacion/depreciacion.js?v=50"></script>
+    <script src="js/motor_contable.js?v=13"></script>
+    <script src="js/eventos/tipos_eventos.js?v=50"></script>
+    <script src="js/eventos/bus_eventos.js?v=11"></script>
+    <script src="js/eventos/proyeccion_contable.js?v=11"></script>
+    <script src="js/diario/movimientos.js?v=11"></script>
+    <script src="js/diario/libro_diario.js?v=20"></script>
+    <script src="js/importacion/importador_partidas.js?v=99"></script>
+    <script>
+    window.addEventListener("load", function () {
+        const accion = new URLSearchParams(window.location.search).get("accion");
+        if (accion === "importar") {
+            const boton = document.getElementById("boton-importar");
+            if (boton && !boton.disabled) boton.click();
+        }
+    });
+    </script>
+    <script>
+    document.querySelectorAll(".manual-trigger").forEach(function(boton) {
+        boton.addEventListener("click", function() {
+            const destino = document.getElementById(boton.dataset.target);
+            if (destino) destino.click();
+        });
+    });
+    </script>
+    <script src="js/nav.js?v=4"></script>
+</body>
+</html>
+
