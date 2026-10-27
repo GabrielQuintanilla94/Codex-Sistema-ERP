@@ -90,12 +90,12 @@ function numeroF07(valor) {
 }
 function escaparCSVF07(valor) {
     const texto = String(valor ?? "");
-    if (/[",\n\r]/.test(texto)) return '"' + texto.replace(/"/g, '""') + '"';
+    if (/[";,\n\r]/.test(texto)) return '"' + texto.replace(/"/g, '""') + '"';
     return texto;
 }
 function construirCSVSinEncabezados(filas) {
     return (filas || []).map(function(fila) {
-        return fila.map(escaparCSVF07).join(",");
+        return fila.map(escaparCSVF07).join(";");
     }).join("\r\n");
 }
 function descargarTexto(nombre, contenido, usarBOM) {

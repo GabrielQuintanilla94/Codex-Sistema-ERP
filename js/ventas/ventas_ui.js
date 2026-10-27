@@ -138,6 +138,13 @@ async function iniciarEdicionVentaUI(evento) {
     await refrescarInventarioVenta();
     document.getElementById("venta-fecha").value = venta.fecha;
     document.getElementById("venta-documento").value = venta.documento;
+    document.getElementById("venta-clase-documento").value = venta.claseDocumento || "";
+    document.getElementById("venta-tipo-documento").value = venta.tipoDocumento || "";
+    document.getElementById("venta-codigo-generacion").value = venta.codigoGeneracion || "";
+    document.getElementById("venta-numero-control").value = venta.numeroControl || "";
+    document.getElementById("venta-sello-recepcion").value = venta.selloRecepcion || "";
+    document.getElementById("venta-hora-emision").value = venta.horaEmision || "";
+
     document.getElementById("venta-tipo-cliente").value = venta.tipoCliente;
     actualizarCliente();
     if (venta.tipoCliente === "CONTRIBUYENTE") {
@@ -173,7 +180,7 @@ async function eliminarVentaUI(evento) {
 async function guardarVentaUI(evento) {
     evento.preventDefault();
     const formulario = evento.currentTarget;
-    const boton = formulario.querySelector('button[type="submit"]');
+    const boton = document.getElementById("guardar-venta");
     const tipo = document.getElementById("venta-tipo-cliente").value;
     const tercero = buscarTerceroPorNRC(tercerosVentas, document.getElementById("venta-cliente").value);
     bloquearBotonVenta(boton, true);
@@ -181,6 +188,13 @@ async function guardarVentaUI(evento) {
         const datosVenta = {
             fecha: document.getElementById("venta-fecha").value,
             documento: document.getElementById("venta-documento").value,
+            claseDocumento: document.getElementById("venta-clase-documento").value,
+            tipoDocumento: document.getElementById("venta-tipo-documento").value,
+            codigoGeneracion: document.getElementById("venta-codigo-generacion").value,
+            numeroControl: document.getElementById("venta-numero-control").value,
+            selloRecepcion: document.getElementById("venta-sello-recepcion").value,
+            horaEmision: document.getElementById("venta-hora-emision").value,
+
             tipoCliente: tipo,
             cliente: tercero?.razonSocial || "Consumidor final",
             nrc: tercero?.nrc || "",

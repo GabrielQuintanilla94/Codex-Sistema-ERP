@@ -1,4 +1,4 @@
-fecha,documento,tipo_cliente,cliente,nrc,sku,cantidad,precio_unitario
-2026-09-05,DTE-VTA-001,CONTRIBUYENTE,"Distribuidora Paredes Vela, S.A. de C.V.",70622-1,FILTRO-01,2,40.00
-2026-09-05,DTE-VTA-001,CONTRIBUYENTE,"Distribuidora Paredes Vela, S.A. de C.V.",70622-1,ACEITE-01,3,55.00
-2026-09-06,DTE-VTA-002,CONSUMIDOR_FINAL,Consumidor final,,FILTRO-01,1,45.00
+fecha,documento,tipo_cliente,cliente,nrc,sku,cantidad,precio_unitario,clase_documento,tipo_documento,codigo_generacion,numero_control,sello_recepcion,hora_emision
+2026-09-05,VTA-001,CONTRIBUYENTE,"Distribuidora Paredes Vela, S.A. de C.V.",70622-1,FILTRO-01,2,40.00,,,,,,
+2026-09-05,VTA-001,CONTRIBUYENTE,"Distribuidora Paredes Vela, S.A. de C.V.",70622-1,ACEITE-01,3,55.00,,,,,,
+2026-09-06,VTA-002,CONSUMIDOR_FINAL,Consumidor final,,FILTRO-01,1,45.00,,,,,,

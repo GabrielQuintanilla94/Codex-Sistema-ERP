@@ -140,6 +140,7 @@ function construirCompra(datos, movimientosPrevios, marcaTiempo) {
     const registro = {
         id: crearIdOperacion("COMPRA", fecha, documento, nrc),
         movimientoId: movimiento.id,
+        ...normalizarIdentificadoresFiscales(datos, "03"),
         fecha: fecha,
         documento: documento,
         proveedor: proveedor,
@@ -164,6 +165,7 @@ function construirCompra(datos, movimientosPrevios, marcaTiempo) {
 function fase1EntradaCompra(datos) {
     if (!datos || typeof datos !== "object") throw new Error("La entrada de compra no es válida.");
     return {
+        ...normalizarIdentificadoresFiscales(datos, "03"),
         fecha: normalizarFechaComercial(datos.fecha),
         documento: normalizarDocumento(datos.documento),
         nrc: String(datos.nrc || "").trim(),
@@ -180,6 +182,7 @@ async function fase2ValidarCompra(entrada, idExcluir) {
     const canonica = { ...entrada, proveedor: tercero.razonSocial, nrc: tercero.nrc, giro: tercero.giro || "" };
     validarPeriodosEditablesIVA(canonica.fecha, canonica.fecha, movimientos);
     const id = crearIdOperacion("COMPRA", canonica.fecha, canonica.documento, canonica.nrc);
+    validarIdentidadFiscalDuplicada(entrada, compras, idExcluir);
     const duplicada = compras.some(function(c) { return String(c.id) !== String(idExcluir || "") && String(c.id) === String(id); });
     if (duplicada) throw new Error("La compra ya fue registrada para ese proveedor y documento.");
     calcularResumenCompra(canonica.lineas, { estricto: true });
@@ -229,6 +232,8 @@ return ejecutarConBloqueoContable(async function() {
 
 async function editarCompra(idOriginal, datos) {
 return ejecutarConBloqueoContable(async function() {
+const anterior = (await obtenerComprasBD()).find(function(registro) { return String(registro.id) === String(idOriginal); });
+datos = { ...anterior, ...datos };
     // FASE 1 — Entrada y normalización.
     const entrada = fase1EntradaCompra(datos);
     // FASE 2 — Validación contra estado actual y período IVA.
@@ -268,6 +273,7 @@ async function importarCompras(registros) {
             })
         };
         try {
+            Object.assign(datos, identificadoresFiscalesDesdeCSV(grupo, "03"));
             const registro = await registrarCompra(datos);
             resultados.push({ ok: true, documento: datos.documento, registro: registro });
         } catch (error) {

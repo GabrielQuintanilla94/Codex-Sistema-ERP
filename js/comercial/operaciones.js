@@ -274,3 +274,43 @@ cambios.push({ almacen: tipo === "COMPRA" ? ALMACEN_COMPRAS : ALMACEN_VENTAS, ac
 }
 await aplicarCambioContableBD(cambios.concat(cambiosInventarioComercial(plan.movimientosOriginales)));
 }
+
+// Inicio fase 1 — Identidad fiscal explícita, independiente de documento interno.
+function normalizarIdentificadoresFiscales(datos, tipoEsperado) {
+const campos = ["claseDocumento", "tipoDocumento", "codigoGeneracion", "numeroControl", "selloRecepcion", "horaEmision"];
+const salida = {};
+for (const campo of campos) {
+const valor = datos[campo];
+if (valor !== undefined && valor !== null && typeof valor !== "string") throw new Error("El campo fiscal " + campo + " debe ser texto.");
+salida[campo] = String(valor || "").trim();
+}
+if (!campos.some(function(campo) { return salida[campo]; })) return {};
+if (salida.claseDocumento !== "4") throw new Error("Seleccione DTE para registrar identificadores electrónicos. Los documentos físicos requieren su estructura fiscal específica.");
+salida.tipoDocumento = salida.tipoDocumento || tipoEsperado;
+if (salida.horaEmision.length === 5) salida.horaEmision += ":00";
+if (salida.horaEmision && !/^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/.test(salida.horaEmision)) throw new Error("La hora de emisión debe usar HH:mm:ss.");
+salida.codigoGeneracion = salida.codigoGeneracion.toUpperCase();
+salida.numeroControl = salida.numeroControl.toUpperCase();
+if (salida.tipoDocumento !== tipoEsperado) throw new Error("El tipo de DTE no corresponde al flujo contable seleccionado (" + tipoEsperado + ").");
+if (!/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/.test(salida.codigoGeneracion)) throw new Error("Ingrese el Código de Generación real del DTE en formato UUID.");
+const control = salida.numeroControl.match(/^DTE-(01|03)-[A-Z0-9]{8}-[0-9]{15}$/);
+if (!control || control[1] !== salida.tipoDocumento) throw new Error("Ingrese el Número de Control real y del mismo tipo de DTE.");
+if (salida.selloRecepcion && !/^[A-Za-z0-9]+$/.test(salida.selloRecepcion)) throw new Error("El Sello de Recepción debe conservar su valor alfanumérico original.");
+return salida;
+}
+// Fin fase 1
+// Inicio fase 2 — Todas las líneas de un CSV deben declarar la misma identidad.
+function identificadoresFiscalesDesdeCSV(grupo, tipoEsperado) {
+let esperado;
+for (const fila of grupo) {
+const actual = normalizarIdentificadoresFiscales({claseDocumento:fila.clase_documento,tipoDocumento:fila.tipo_documento,codigoGeneracion:fila.codigo_generacion,numeroControl:fila.numero_control,selloRecepcion:fila.sello_recepcion,horaEmision:fila.hora_emision}, tipoEsperado);
+if (esperado && !estadoPersistidoCoincide(esperado, actual)) throw new Error("Los identificadores fiscales cambian entre líneas del mismo documento.");
+esperado = actual;
+}
+return esperado || {};
+}
+function validarIdentidadFiscalDuplicada(entrada, registros, idExcluir) {
+if (!entrada.codigoGeneracion) return;
+if (registros.some(function(registro) { return String(registro.id) !== String(idExcluir || "") && registro.codigoGeneracion === entrada.codigoGeneracion; })) throw new Error("El Código de Generación ya existe en esta clase de operación.");
+}
+// Fin fase 2

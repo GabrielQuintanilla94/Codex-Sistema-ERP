@@ -164,6 +164,7 @@ function construirVenta(datos, movimientosPrevios, inventarioActual, marcaTiempo
     const registro = {
         id: crearIdOperacion("VENTA", fecha, documento, nrc || "CF"),
         movimientoId: movimiento.id,
+        ...normalizarIdentificadoresFiscales(datos, normalizarTipoCliente(datos.tipoCliente) === "CONTRIBUYENTE" ? "03" : "01"),
         fecha: fecha,
         documento: documento,
         tipoCliente: tipoCliente,
@@ -175,7 +176,7 @@ function construirVenta(datos, movimientosPrevios, inventarioActual, marcaTiempo
         ivaDebito: resumen.iva,
         total: resumen.total,
         tipoOperacion: 1,
-        tipoIngreso: 2,
+        tipoIngreso: 3,
         creadoEn: selloTiempo
     };
     const verificacion = verificarVentaConstruidaTresNiveles(registro, movimiento, resumen);
@@ -187,6 +188,7 @@ function construirVenta(datos, movimientosPrevios, inventarioActual, marcaTiempo
 function fase1EntradaVenta(datos) {
     if (!datos || typeof datos !== "object") throw new Error("La entrada de venta no es válida.");
     return {
+        ...normalizarIdentificadoresFiscales(datos, normalizarTipoCliente(datos.tipoCliente) === "CONTRIBUYENTE" ? "03" : "01"),
         fecha: normalizarFechaComercial(datos.fecha),
         documento: normalizarDocumento(datos.documento),
         tipoCliente: normalizarTipoCliente(datos.tipoCliente),
@@ -209,6 +211,7 @@ async function fase2ValidarVenta(entrada, idExcluir) {
     }
     validarPeriodosEditablesIVA(canonica.fecha, canonica.fecha, movimientos);
     const id = crearIdOperacion("VENTA", canonica.fecha, canonica.documento, String(canonica.nrc || "CF"));
+    validarIdentidadFiscalDuplicada(entrada, ventas, idExcluir);
     const duplicada = ventas.some(function(v) { return String(v.id) !== String(idExcluir || "") && String(v.id) === String(id); });
     if (duplicada) throw new Error("La venta ya fue registrada para ese cliente y documento.");
     const resumen = calcularResumenVenta(canonica.lineas, { estricto: true });
@@ -266,6 +269,8 @@ return ejecutarConBloqueoContable(async function() {
 
 async function editarVenta(idOriginal, datos) {
 return ejecutarConBloqueoContable(async function() {
+const anterior = (await obtenerVentasBD()).find(function(registro) { return String(registro.id) === String(idOriginal); });
+datos = { ...anterior, ...datos };
     // FASE 1 — Entrada y normalización.
     const entrada = fase1EntradaVenta(datos);
     // FASE 2 — Validación contra estado actual, stock y período IVA.
@@ -312,6 +317,7 @@ async function importarVentas(registros) {
             })
         };
         try {
+            Object.assign(datos, identificadoresFiscalesDesdeCSV(grupo, normalizarTipoCliente(datos.tipoCliente) === "CONTRIBUYENTE" ? "03" : "01"));
             const registro = await registrarVenta(datos);
             resultados.push({ ok: true, documento: datos.documento, registro: registro });
         } catch (error) {

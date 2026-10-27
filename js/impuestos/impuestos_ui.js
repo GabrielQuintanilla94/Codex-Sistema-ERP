@@ -48,15 +48,17 @@ function refrescarImpuestos() {
     document.querySelectorAll(".eliminar-f07-venta").forEach(function(b) { b.addEventListener("click", eliminarVentaDesdeImpuestos); });
     window.dispatchEvent(new Event("erp:data-updated"));
 }
-function exportar(tipo) {
+async function exportar(tipo) {
+try {
+await recargarDatosImpuestos();
     const periodo = document.getElementById("periodo-iva").value;
     let csv = "", nombre = "";
     if (tipo === "compras") {
-        csv = generarCSVF07Compras(comprasImpuestos, periodo); nombre = `F07_Anexo3_Compras_${periodo}.csv`;
+        csv = generarCSVF07Compras(comprasImpuestos, periodo); nombre = `F07_A3_${periodo.replace("-", "")}.csv`;
     } else if (tipo === "contribuyentes") {
-        csv = generarCSVF07VentasContribuyentes(ventasImpuestos, periodo); nombre = `F07_Anexo1_Ventas_Contribuyentes_${periodo}.csv`;
+        csv = generarCSVF07VentasContribuyentes(ventasImpuestos, periodo); nombre = `F07_A1_${periodo.replace("-", "")}.csv`;
     } else {
-        csv = generarCSVF07VentasConsumidorFinal(ventasImpuestos, periodo); nombre = `F07_Anexo2_Ventas_Consumidor_Final_${periodo}.csv`;
+        csv = generarCSVF07VentasConsumidorFinal(ventasImpuestos, periodo); nombre = `F07_A2_${periodo.replace("-", "")}.csv`;
     }
     if (!csv) {
         document.getElementById("mensaje-impuestos").textContent = "No hay registros para exportar en ese anexo y período.";
@@ -64,6 +66,9 @@ function exportar(tipo) {
     }
     descargarTexto(nombre, csv);
     document.getElementById("mensaje-impuestos").textContent = "CSV generado sin encabezados y con estructura verificada para el anexo seleccionado.";
+} catch (error) {
+document.getElementById("mensaje-impuestos").textContent = "No se generó el archivo: " + error.message;
+}
 }
 async function recargarDatosImpuestos() {
     [comprasImpuestos, ventasImpuestos] = await Promise.all([obtenerComprasBD(), obtenerVentasBD()]);

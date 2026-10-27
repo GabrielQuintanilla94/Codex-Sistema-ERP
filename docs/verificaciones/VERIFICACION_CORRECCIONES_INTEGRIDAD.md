@@ -11,5 +11,5 @@
 ## Validación
 Suite reproducible: `tests/integracion.cjs`; instrucciones: `tests/README.md`. Ejecutada en Chromium con IndexedDB real: **20 pruebas aprobadas, 0 fallidas, 0 omitidas**. También se revisa sintaxis con `node --check` y whitespace con `git diff --check`.
 ## Límites
-F07/DTE: el exportador aún reutiliza `documento` en campos de identificación fiscal. Quedan pendientes la captura separada de identificadores reales y el contraste de cada columna con el manual oficial vigente. Los cambios del cierre IVA no certifican esos anexos.
+F07/DTE: se completó posteriormente la captura separada y el mapeo de los flujos DTE 01/03 contra el manual aportado. Fuente, páginas y límites en `docs/referencias/F07_MANUAL_APORTADO.md`. No se presentó una declaración ante Hacienda.
 Web Locks requiere un contexto seguro (HTTPS o localhost); sin soporte se rechazan mutaciones en vez de ejecutar escrituras concurrentes sin protección. Los consumidores EDA existentes no constituyen una cola durable con reintentos: una publicación fallida requiere diagnóstico y reconstrucción de proyecciones desde estado persistido. Las pruebas no simulan cierre del navegador entre commit y fase 5; no se garantiza recuperación automática de ese intervalo ante caída del proceso.

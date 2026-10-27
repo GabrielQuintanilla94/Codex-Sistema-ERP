@@ -1,3 +1,3 @@
-fecha,documento,proveedor,nrc,sku,descripcion,cantidad,monto_gravado
-2026-09-01,DTE-COMP-001,"Super Repuestos El Salvador, S.A. de C.V.",275-5,FILTRO-01,Filtro de aceite,10,250.00
-2026-09-01,DTE-COMP-001,"Super Repuestos El Salvador, S.A. de C.V.",275-5,ACEITE-01,Aceite 5W-20,12,480.00
+fecha,documento,proveedor,nrc,sku,descripcion,cantidad,monto_gravado,clase_documento,tipo_documento,codigo_generacion,numero_control,sello_recepcion,hora_emision
+2026-09-01,COMP-001,"Super Repuestos El Salvador, S.A. de C.V.",275-5,FILTRO-01,Filtro de aceite,10,250.00,,,,,,
+2026-09-01,COMP-001,"Super Repuestos El Salvador, S.A. de C.V.",275-5,ACEITE-01,Aceite 5W-20,12,480.00,,,,,,

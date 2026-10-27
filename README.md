@@ -63,3 +63,7 @@ Plantillas disponibles:
 ## Afinación técnica
 
 La revisión integral se documenta en `docs/revisiones/AFINACION_GENERAL.md` y las pruebas manuales en `docs/PRUEBAS_AFINACION_COMPLETA.md`.
+
+## Identificación fiscal y F07
+La referencia `documento` no sustituye Código de Generación, Número de Control ni Sello de Recepción. Captúrelos por separado en Operaciones o mediante las nuevas columnas opcionales de las plantillas CSV. Los documentos históricos sin identificación fiscal no se exportan como DTE automáticamente.
+Los anexos DTE 01/03 usan punto y coma; consumidor final se agrupa por día e incluye IVA en las ventas gravadas. Para varias facturas del día, complete la hora de emisión. Fuente y alcance: `docs/referencias/F07_MANUAL_APORTADO.md`.

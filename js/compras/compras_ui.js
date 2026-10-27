@@ -98,6 +98,13 @@ async function iniciarEdicionCompraUI(evento) {
     compraEnEdicionId = compra.id;
     document.getElementById("compra-fecha").value = compra.fecha;
     document.getElementById("compra-documento").value = compra.documento;
+    document.getElementById("compra-clase-documento").value = compra.claseDocumento || "";
+    document.getElementById("compra-tipo-documento").value = compra.tipoDocumento || "";
+    document.getElementById("compra-codigo-generacion").value = compra.codigoGeneracion || "";
+    document.getElementById("compra-numero-control").value = compra.numeroControl || "";
+    document.getElementById("compra-sello-recepcion").value = compra.selloRecepcion || "";
+    document.getElementById("compra-hora-emision").value = compra.horaEmision || "";
+
     document.getElementById("compra-proveedor").value = compra.nrc;
     actualizarProveedor();
     document.getElementById("cuerpo-lineas-compra").innerHTML = "";
@@ -135,6 +142,13 @@ async function guardarCompraUI(evento) {
         const datosCompra = {
             fecha: document.getElementById("compra-fecha").value,
             documento: document.getElementById("compra-documento").value,
+            claseDocumento: document.getElementById("compra-clase-documento").value,
+            tipoDocumento: document.getElementById("compra-tipo-documento").value,
+            codigoGeneracion: document.getElementById("compra-codigo-generacion").value,
+            numeroControl: document.getElementById("compra-numero-control").value,
+            selloRecepcion: document.getElementById("compra-sello-recepcion").value,
+            horaEmision: document.getElementById("compra-hora-emision").value,
+
             proveedor: tercero?.razonSocial,
             nrc: tercero?.nrc,
             giro: tercero?.giro,
