@@ -11,6 +11,7 @@ const totalAcumuladaDepreciacion = document.getElementById("depreciacion-acumula
 const totalLibrosDepreciacion = document.getElementById("depreciacion-libros-total");
 const MESES_DEPRECIACION = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 let activosDepreciacion = [];
+let activosDepreciacionOmitidos = 0;
 
 /* FASE UI 01 — Formato/escape: sin cálculo contable. */
 function dineroDepreciacion(centavos) {
@@ -28,7 +29,11 @@ function escaparDepreciacion(texto) {
 
 /* FASE UI 02 — Entrada: solo recuperar y reconstruir activos. */
 async function cargarActivosDepreciacion() {
-    activosDepreciacion = extraerActivosFijosDesdeMovimientos(await obtenerMovimientosBD());
+    const movimientos = await obtenerMovimientosBD();
+activosDepreciacionOmitidos = movimientos.reduce(function(total,movimiento) {
+return total + (movimiento.partida || []).filter(function(linea) {return esCuentaActivoFijo(linea.codigo) && Number(linea.debe || 0)>0 && (!linea.activoFijo || !fechaDepreciacionValida(linea.activoFijo.fechaDisponibleUso));}).length;
+},0);
+activosDepreciacion = extraerActivosFijosDesdeMovimientos(movimientos);
     return activosDepreciacion;
 }
 
@@ -113,7 +118,7 @@ function renderizarPortafolioDepreciacion(filas) {
         const acumulada = Math.max(0, Number(fila.corte.depreciacionAcumuladaCentavos || 0));
         const porcentaje = Math.min(100, acumulada / costo * 100);
         return `<div class="asset-card"><div class="asset-card-head"><div><strong>${escaparDepreciacion(fila.activo.nombre)}</strong><small>${escaparDepreciacion(fila.activo.codigoActivo)} · ${escaparDepreciacion(fila.activo.categoria)}</small></div><span>${porcentaje.toFixed(1)}%</span></div><div class="asset-progress"><i style="width:${porcentaje.toFixed(2)}%"></i></div><div class="asset-meta"><span>Costo <b>${dineroDepreciacion(fila.activo.costoCentavos)}</b></span><span>Acumulada <b>${dineroDepreciacion(acumulada)}</b></span><span>Libros <b>${dineroDepreciacion(fila.corte.valorLibrosCentavos)}</b></span></div></div>`;
-    }).join("") : '<p class="dashboard-vacio">Sin activos fijos registrados.</p>';
+    }).join("") : "";
 }
 
 function renderizarTotalesDepreciacion(filas) {
@@ -127,6 +132,15 @@ function renderizarTotalesDepreciacion(filas) {
     if (matrizActivos) matrizActivos.textContent = String(filas.length);
     if (matrizAcumulada) matrizAcumulada.textContent = dineroDepreciacion(totales.acumulada);
     sinActivosDepreciacion.style.display = filas.length ? "none" : "block";
+const aviso = document.getElementById("aviso-activos-depreciacion");
+if (aviso) {
+aviso.hidden = activosDepreciacionOmitidos === 0;
+aviso.textContent = activosDepreciacionOmitidos ? "Hay " + activosDepreciacionOmitidos + " adquisición(es) de activo fijo sin datos de depreciación o fecha disponible para uso válida. Completá sus datos desde Partidas manuales; no se inventan fechas ni cuotas." : "";
+}
+const tabla = document.querySelector(".tabla-depreciacion-contenedor");
+if (tabla) tabla.hidden = filas.length === 0;
+const ayuda = document.querySelector(".matrix-scroll-hint");
+if (ayuda) ayuda.hidden = filas.length === 0;
 }
 function renderizarDepreciacion() {
     const fechaSistema = fechaLocalDepreciacion(); /* Snapshot único compartido por todas las filas. */
@@ -140,7 +154,7 @@ function renderizarDepreciacion() {
 }
 
 /* FASE UI 05 — Orquestación: captura errores sin mezclar lógica matemática. */
-async function actualizarDepreciacionUI() {
+async function actualizarDepreciacionUI(propagarError) {
     mensajeDepreciacion.textContent = "";
     try {
         await cargarActivosDepreciacion();
@@ -149,6 +163,7 @@ async function actualizarDepreciacionUI() {
     } catch (error) {
         mensajeDepreciacion.textContent = error.message;
         mensajeDepreciacion.className = "mensaje-movimiento error";
+        if (propagarError === true) throw error;
     }
 }
 
@@ -184,7 +199,9 @@ async function iniciarDepreciacionUI() {
 document.getElementById("actualizar-depreciacion").addEventListener("click", actualizarDepreciacionUI);
 if (botonContabilizarDepreciacion) botonContabilizarDepreciacion.addEventListener("click", contabilizarDepreciacionAlCorte);
 fechaCorteDepreciacion.addEventListener("change", actualizarDepreciacionUI);
-if (anioDepreciacion) anioDepreciacion.addEventListener("change", renderizarDepreciacion);
+if (anioDepreciacion) anioDepreciacion.addEventListener("change", actualizarDepreciacionUI);
+function refrescarDepreciacionDesdeEvento() {return actualizarDepreciacionUI(true);}
+registrarConsumidorContable("depreciacion",refrescarDepreciacionDesdeEvento);
 iniciarDepreciacionUI().catch(function(error) {
     mensajeDepreciacion.textContent = error.message;
     mensajeDepreciacion.className = "mensaje-movimiento error";

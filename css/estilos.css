@@ -1,10 +1,10 @@
 :root {
-    --azul: #315bd8;
+    --azul: var(--erp-blue);
     --verde: #16825d;
     --rojo: #b94752;
-    --texto: #202b3c;
-    --suave: #6f7887;
-    --borde: #dce1e8;
+    --texto: var(--erp-text);
+    --suave: var(--erp-muted);
+    --borde: var(--erp-border);
 }
 
 * { box-sizing: border-box; }
@@ -243,20 +243,7 @@ button { cursor: pointer; }
     font-size: 13px;
 }
 
-#boton-agregar {
-    padding: 10px 14px;
-    border: 1px solid var(--azul);
-    border-radius: 7px;
-    background: var(--azul);
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
-}
 
-#boton-agregar:disabled {
-    cursor: wait;
-    opacity: 0.6;
-}
 
 .acciones-encabezado {
     display: flex;
@@ -850,7 +837,7 @@ button { cursor: pointer; }
 }
 
 .filtros-reporte input {
-    min-height: 38px;
+    min-height: var(--ui-control-height);
     padding: 8px 10px;
     border: 1px solid var(--borde);
     border-radius: 7px;
@@ -858,7 +845,7 @@ button { cursor: pointer; }
 }
 
 .filtros-reporte button {
-    min-height: 38px;
+    min-height: var(--ui-control-height);
     padding: 8px 16px;
     border: 0;
     border-radius: 7px;
@@ -2754,14 +2741,12 @@ button {
     background: #fff1f1;
     outline: none;
 }
-\n\n/* ==========================================================
+
+
+/* ==========================================================
    REDISEÑO ERP / BI 2026 — densidad, coherencia y operación
    ========================================================== */
-:root {
-    --erp-navy:#10233f; --erp-blue:#2f5bea; --erp-blue-soft:#eef3ff; --erp-green:#128260;
-    --erp-amber:#b7791f; --erp-red:#c4454d; --erp-bg:#f4f6f9; --erp-panel:#ffffff;
-    --erp-border:#dfe5ed; --erp-muted:#6c7889; --erp-text:#17263d;
-}
+
 body { background:var(--erp-bg); color:var(--erp-text); }
 .app-shell { min-height:100vh; }
 .app-main.contenedor { width:min(1500px, calc(100% - 56px)); margin:26px auto 48px; }
@@ -2780,7 +2765,7 @@ body { background:var(--erp-bg); color:var(--erp-text); }
 .titulo-reporte h2 { margin:2px 0 4px; font-size:19px; }
 .titulo-reporte p { margin:0; color:var(--erp-muted); font-size:12px; }
 .dashboard-kicker { color:#708096; font-size:9px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
-.boton-primario, button:not(.boton-secundario-azul):not(.boton-peligro):not(.boton-icono):not(.module-tab) { background:var(--erp-blue); color:#fff; border:1px solid var(--erp-blue); border-radius:8px; padding:10px 14px; font-weight:700; }
+
 .boton-secundario-azul { border-color:#9eb4ff; color:var(--erp-blue); border-radius:8px; background:#fff; }
 .enlace-boton { display:inline-flex; align-items:center; justify-content:center; text-decoration:none; }
 .boton-ancho { width:100%; margin-top:16px; }
@@ -2877,7 +2862,7 @@ body { background:var(--erp-bg); color:var(--erp-text); }
     .app-main.contenedor { width:min(100% - 24px,1500px); margin:18px auto 34px !important; }
     .app-main { margin-left:0 !important; } .barra-lateral { width:100%; }
     .kpi-strip,.resumen-impuestos { grid-template-columns:1fr 1fr; }
-    .dashboard-header-actions { display:none; } .encabezado-pagina h1{font-size:25px;}
+     .encabezado-pagina h1{font-size:25px;}
     .form-grid-responsive { grid-template-columns:1fr; } .campo-ancho{grid-column:auto;}
     .form-footer { grid-template-columns:1fr; } .compact-totals { justify-content:space-between; }
     .module-tabs { width:100%; overflow:auto; position:static; } .module-tab { flex:1; white-space:nowrap; }
@@ -2893,125 +2878,59 @@ body { background:var(--erp-bg); color:var(--erp-text); }
 @media (max-width:1100px) { .manual-entry-grid { grid-template-columns:1fr 1fr; } .manual-help-card{grid-column:1/-1;} }
 @media (max-width:700px) { .manual-entry-grid { grid-template-columns:1fr; } .manual-help-card{grid-column:auto;} }
 
-/* =========================================================
-   IDENTIDAD FUNCIONAL POR MÓDULO — ERP/BI v2
-   ========================================================= */
-:root{
-  --mod-ops:#2563eb;
-  --mod-stock:#0f766e;
-  --mod-asset:#7c3aed;
-  --mod-dash:#1d4ed8;
-  --soft-blue:#eff6ff;
-  --soft-teal:#ecfdf5;
-  --soft-violet:#f5f3ff;
-  --ink:#0f172a;
-  --muted:#64748b;
-}
+/* Distribuciones por contenido; la apariencia común está en componentes.css. */
+.transaction-shell{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:16px;align-items:start}
+.transaction-document{overflow:hidden;padding:20px}
+.transaction-side{position:sticky;top:16px;display:grid;gap:16px}
+.document-actions{display:grid;gap:8px;margin-top:16px}
+.document-actions .boton-primario{width:100%}
+.bulk-panel{margin:16px 0}
+.bulk-inline{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center}
+.stock-command{display:grid;grid-template-columns:1.7fr .8fr;gap:16px;align-items:start}
+.stock-insight-stack{display:grid;gap:16px;position:sticky;top:16px}
+.stock-health{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stock-health div{padding:12px}
+.stock-health span,.stock-health strong{display:block}
+.asset-layout{grid-template-columns:minmax(0,1fr) 330px;gap:16px}
+@media(max-width:1180px){.transaction-shell,.stock-command,.asset-layout{grid-template-columns:1fr}.transaction-side,.stock-insight-stack{position:static}}
+@media(max-width:760px){.bulk-inline{grid-template-columns:1fr}}
 
-/* Dashboard: analytical control room */
-.dashboard-page .dashboard-header{
-  padding:20px 22px;
-  border:1px solid #dbe5f2;
-  border-radius:16px;
-  background:linear-gradient(120deg,#ffffff 0%,#f5f8ff 68%,#edf3ff 100%);
-  margin-bottom:14px;
-}
-.dashboard-page .dashboard-kpis{grid-template-columns:1.2fr repeat(4,1fr)}
-.dashboard-page .kpi-card{position:relative;overflow:hidden;border-radius:14px;box-shadow:0 3px 12px rgba(30,64,175,.035)}
-.dashboard-page .kpi-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#d7e2f5}
-.dashboard-page .kpi-card.kpi-primary:before{background:var(--mod-dash)}
-.dashboard-page .dashboard-main-card{border-top:3px solid #dce6fb}
-.dashboard-page .dashboard-side-card{background:#fbfcfe}
-.dashboard-page .trend-chart{background:linear-gradient(to bottom,rgba(37,99,235,.025),transparent)}
-.dashboard-page .activity-panel{border-left:4px solid #dbe7ff}
+/* Activos: controles compartidos, matriz desplazable y estados explícitos. */
+.assets-header-actions{display:flex;flex-wrap:wrap;gap:10px}
+.matrix-toolbar{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:16px}
+.matrix-toolbar h2{margin:6px 0 0;font-size:19px}
+.matrix-toolbar .filtros-reporte{flex:1;max-width:700px}
+.matrix-toolbar select{width:100%}
+.matrix-summary{display:flex;gap:18px;flex-wrap:wrap;color:var(--erp-muted);font-size:12px}
+.matrix-summary span{display:flex;gap:6px;align-items:center}
+.matrix-summary strong{color:var(--erp-text)}
+.assets-page .tabla-depreciacion-contenedor{overflow-x:auto;max-width:100%}
+.aviso-activos{padding:12px 16px;border:1px solid #e8ce8f;border-radius:10px;background:#fff9e9;color:#72521a;font-size:12px;line-height:1.6;margin-bottom:16px}
+.matrix-scroll-hint{font-size:12px;color:var(--erp-muted);margin:10px 0}
+@media(max-width:760px){.assets-header-actions{width:100%}.assets-header-actions a{flex:1}.matrix-toolbar .filtros-reporte{max-width:none;width:100%}.matrix-toolbar .filtros-reporte label{min-width:0;width:100%}.assets-page .asset-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.assets-page .asset-timeline{display:none}}
 
-/* Operations: transactional document workspace */
-.operaciones-page{--module-accent:var(--mod-ops)}
-.operaciones-page .encabezado-pagina{padding-bottom:12px;border-bottom:1px solid #dce3ec}
-.operaciones-page .operaciones-kpis{grid-template-columns:repeat(5,minmax(150px,1fr));gap:8px;margin-bottom:12px}
-.operaciones-page .operaciones-kpis .kpi-card{min-height:78px;padding:12px 14px;border-radius:8px;border-top:2px solid #dbe5f6}
-.operaciones-page .module-tabs{position:static;width:100%;justify-content:flex-start;border-radius:8px;box-shadow:none;background:#eef3fb;border-color:#dbe4f0;margin-bottom:12px}
-.operaciones-page .module-tab{min-width:120px;border-radius:6px}
-.operaciones-page .module-tab.activo{background:#fff;color:var(--mod-ops);box-shadow:0 1px 4px rgba(15,23,42,.08)}
-.operaciones-page .transaction-shell{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:14px;align-items:start}
-.operaciones-page .transaction-document{background:#fff;border:1px solid #dbe2ec;border-radius:10px;overflow:hidden}
-.operaciones-page .transaction-document .titulo-reporte{padding:16px 18px 12px;background:#f8fafc;border-bottom:1px solid #e5eaf1;margin:0}
-.operaciones-page .transaction-document .formulario-comercial{padding:16px 18px 18px}
-.operaciones-page .transaction-side{position:sticky;top:16px;display:grid;gap:12px}
-.operaciones-page .impact-card{border-left:4px solid var(--mod-ops)}
-.operaciones-page .impact-card .totales-comerciales{display:grid;gap:10px;padding:0;border:0}
-.operaciones-page .impact-card .totales-comerciales span{display:flex;justify-content:space-between;align-items:center;min-width:0;padding:8px 0;border-bottom:1px solid #edf1f5}
-.operaciones-page .impact-card .totales-comerciales strong{font-size:16px}
-.operaciones-page .impact-card .total-final{padding-top:10px;border-top:2px solid #dce5f4}
-.operaciones-page .impact-card .total-final strong{font-size:24px;color:var(--mod-ops)}
-.operaciones-page .document-actions{display:grid;gap:8px;margin-top:12px}
-.operaciones-page .document-actions .boton-primario{width:100%}
-.operaciones-page .bulk-panel{margin:12px 0;border-style:dashed;background:#fbfdff}
-.operaciones-page .bulk-panel .titulo-reporte{align-items:center}
-.operaciones-page .bulk-inline{display:grid;grid-template-columns:1fr auto auto;gap:9px;align-items:center}
-.operaciones-page .table-panel{border-top:3px solid #dce7f8}
-.operaciones-page .tabla-reporte thead{background:#f4f7fb}
-.operaciones-page .tabla-reporte tbody tr:hover{background:#f8fbff}
+/* Disposición de acciones del diálogo de importación. */
 
-/* Inventory: warehouse/stock monitor */
-.inventory-page{--module-accent:var(--mod-stock)}
-.inventory-page .encabezado-pagina{background:linear-gradient(110deg,#fff,#f0fbf8);border:1px solid #d9eee8;border-radius:14px;padding:18px 20px;margin-bottom:14px}
-.inventory-page .kpi-strip{grid-template-columns:repeat(3,1fr)}
-.inventory-page .kpi-card{border-radius:10px;border-top:3px solid #cde8e1}
-.inventory-page .kpi-primary{background:linear-gradient(145deg,#fff,#effbf8);border-color:#bfe3da}
-.inventory-page .stock-command{display:grid;grid-template-columns:1.7fr .8fr;gap:14px;align-items:start}
-.inventory-page .stock-table-card{border-radius:12px;overflow:hidden;border-top:3px solid var(--mod-stock)}
-.inventory-page .stock-table-card .titulo-reporte{background:#f7fbfa;margin:-20px -20px 14px;padding:16px 20px;border-bottom:1px solid #e2eeeb}
-.inventory-page .stock-insight-stack{display:grid;gap:12px;position:sticky;top:14px}
-.inventory-page .inventory-insights{border-left:4px solid var(--mod-stock);background:#fbfefd}
-.inventory-page .stock-health{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.inventory-page .stock-health div{padding:12px;border-radius:9px;background:#f1f8f6}
-.inventory-page .stock-health span{display:block;color:#667d77;font-size:9px;text-transform:uppercase;font-weight:700}
-.inventory-page .stock-health strong{display:block;margin-top:4px;font-size:18px;color:#125f58}
-.inventory-page .tabla-inventario tbody tr:nth-child(even){background:#fbfdfc}
-.inventory-page .tabla-inventario tbody tr:hover{background:#eef9f6}
-.inventory-page .participacion-track i{background:var(--mod-stock)}
-.inventory-page .ranking-track i{background:#2b8b80}
-.inventory-page .sku-cell{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:700;color:#0f4f4a}
+        /* Garantiza que las acciones de importación sean visibles aun si el CSS global cambia. */
+        #dialogo-importar .acciones-importacion-visibles {
+            display: flex !important;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            position: static !important;
+            margin: 16px 0 !important;
+            padding: 12px 0 !important;
+            border-top: 1px solid var(--erp-border);
+            border-bottom: 1px solid var(--erp-border);
 
-/* Fixed assets: portfolio / lifecycle view */
-.assets-page{--module-accent:var(--mod-asset)}
-.assets-page .encabezado-pagina{padding:18px 20px;border-radius:14px;border:1px solid #e4def5;background:linear-gradient(115deg,#fff,#f8f5ff);margin-bottom:14px}
-.assets-page .asset-summary{display:grid;grid-template-columns:1.1fr repeat(3,1fr);gap:10px;margin-bottom:14px}
-.assets-page .asset-summary .kpi-card{border-radius:10px;border-top:3px solid #ddd3f8}
-.assets-page .asset-summary .kpi-primary{border-color:#d2c2f7;background:linear-gradient(145deg,#fff,#f6f2ff)}
-.assets-page .asset-layout{grid-template-columns:minmax(0,1fr) 330px}
-.assets-page .asset-portfolio-panel{border-top:3px solid var(--mod-asset)}
-.assets-page .asset-card{position:relative;padding:16px;border-radius:12px;background:linear-gradient(100deg,#fff,#fcfbff);border-color:#e8e2f4}
-.assets-page .asset-card:before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:3px;background:#9f7aea}
-.assets-page .asset-card-head{padding-left:6px}
-.assets-page .asset-progress{height:9px;background:#eeeaf7}
-.assets-page .asset-progress i{background:linear-gradient(90deg,#7c3aed,#9f67e8)}
-.assets-page .asset-controls{border-left:4px solid var(--mod-asset);background:#fcfbff}
-.assets-page .asset-controls .boton-primario{background:var(--mod-asset)}
-.assets-page .asset-controls .boton-secundario-azul{color:var(--mod-asset);border-color:#cfc2ee}
-.assets-page .asset-timeline{display:grid;grid-template-columns:repeat(12,minmax(58px,1fr));gap:4px;margin:10px 0 14px}
-.assets-page .asset-timeline span{padding:7px 4px;text-align:center;border-radius:6px;background:#f4f1fa;color:#6e6285;font-size:9px;font-weight:700}
-.assets-page .matrix-panel{border-top:3px solid #d8cff0}
-.assets-page .tabla-depreciacion thead th{background:#f5f2fb;color:#514669}
-.assets-page .tabla-depreciacion tbody tr:hover{background:#faf8ff}
-
-@media(max-width:1180px){
- .operaciones-page .transaction-shell,.inventory-page .stock-command{grid-template-columns:1fr}
- .operaciones-page .transaction-side,.inventory-page .stock-insight-stack{position:static}
- .assets-page .asset-layout{grid-template-columns:1fr}
-}
-@media(max-width:760px){
- .operaciones-page .bulk-inline{grid-template-columns:1fr}
- .operaciones-page .operaciones-kpis{grid-template-columns:1fr 1fr}
- .assets-page .asset-summary{grid-template-columns:1fr 1fr}
- .inventory-page .stock-health{grid-template-columns:1fr 1fr}
-}
-
-/* Explicit primary actions for visual consistency */
-.boton-primario, a.boton-primario, button.boton-primario { background:#2f5bea !important; color:#fff !important; border:1px solid #2f5bea !important; }
-.assets-page .boton-primario { background:#7c3aed !important; border-color:#7c3aed !important; }
-.inventory-page #actualizar-inventario { background:#0f766e !important; border-color:#0f766e !important; color:#fff !important; }
-.operaciones-page .document-actions { margin-top:16px; }
-.operaciones-page .document-actions button { min-height:42px; }
-.operaciones-page .bulk-inline > button { background:#2f5bea !important; border:1px solid #2f5bea !important; color:#fff !important; border-radius:8px; padding:10px 14px; font-weight:700; }
+            box-shadow: none !important;
+        }
+        #dialogo-importar .acciones-importacion-visibles button {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            min-height: var(--ui-control-height);
+        }
+        #dialogo-importar #confirmar-importacion:not(:disabled) {
+            min-width: 180px;
+        }

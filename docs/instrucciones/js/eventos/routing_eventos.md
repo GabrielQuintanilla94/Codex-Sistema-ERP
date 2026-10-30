@@ -4,7 +4,7 @@ Conservar nombres, EDA, IndexedDB y módulos existentes. Este router tiene cuatr
 ## Fase 0 — Paths y contratos
 Raíz: `/workspace/Codex-Sistema-ERP`.
 - Fuente: `js/eventos/routing_eventos.js`; cargar después de `base_datos.js`, `tipos_eventos.js` y `bus_eventos.js`, antes de los consumidores.
-- Consumidores: `js/eventos/proyeccion_contable.js`, `js/reportes/reportes.js`, `js/dashboard.js`, `js/inventario/inventario_ui.js`.
+- Consumidores: `js/eventos/proyeccion_contable.js`, `js/reportes/reportes.js`, `js/dashboard.js`, `js/inventario/inventario_ui.js`, `js/depreciacion/depreciacion_ui.js`.
 - Contratos: `RUTAS_EVENTOS_CONTABLES` declara evento → publicador → consumidores; `PERFILES_ROUTING` exige los consumidores de cada página; `DEPENDENCIAS_ROUTING` ordena el DAG.
 - Evidencia: `tests/integracion.cjs`; explicación: `docs/EDA.md`.
 <!-- Fin fase 0 -->

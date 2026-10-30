@@ -1,13 +1,13 @@
 // Inicio fase 0 — Contratos y paths del enrutamiento local.
-const DEPENDENCIAS_ROUTING = Object.freeze({proyeccionContable:Object.freeze([]),reportes:Object.freeze(["proyeccionContable"]),dashboard:Object.freeze([]),inventario:Object.freeze([])});
-const PERFILES_ROUTING = Object.freeze({"index.html":Object.freeze(["dashboard"]),"reportes.html":Object.freeze(["proyeccionContable","reportes"]),"inventario.html":Object.freeze(["inventario"]),"partida_manual.html":Object.freeze(["proyeccionContable"]),"catalogo_cuentas.html":Object.freeze(["proyeccionContable"]),"operaciones.html":Object.freeze([]),"depreciacion.html":Object.freeze([])});
+const DEPENDENCIAS_ROUTING = Object.freeze({proyeccionContable:Object.freeze([]),reportes:Object.freeze(["proyeccionContable"]),dashboard:Object.freeze([]),inventario:Object.freeze([]),depreciacion:Object.freeze([])});
+const PERFILES_ROUTING = Object.freeze({"index.html":Object.freeze(["dashboard"]),"reportes.html":Object.freeze(["proyeccionContable","reportes"]),"inventario.html":Object.freeze(["inventario"]),"partida_manual.html":Object.freeze(["proyeccionContable"]),"catalogo_cuentas.html":Object.freeze(["proyeccionContable"]),"operaciones.html":Object.freeze([]),"depreciacion.html":Object.freeze(["depreciacion"]),"matriz_depreciacion.html":Object.freeze(["depreciacion"])});
 const RUTAS_EVENTOS_CONTABLES = Object.freeze(Object.fromEntries([
 ["CUENTA_CREADA","js/catalogo/catalogo_ui.js",false],["CUENTA_ELIMINADA","js/catalogo/catalogo_ui.js",false],
 ["PARTIDA_REGISTRADA","js/diario/libro_diario.js",true],["PARTIDA_EDITADA","js/diario/libro_diario.js",true],["PARTIDA_ELIMINADA","js/diario/libro_diario.js",true],["PARTIDAS_IMPORTADAS","js/importacion/importador_partidas.js",true],
 ["COMPRA_REGISTRADA","js/compras/compras.js",true],["COMPRA_EDITADA","js/compras/compras.js",true],["COMPRA_ELIMINADA","js/comercial/operaciones.js",true],
 ["VENTA_REGISTRADA","js/ventas/ventas.js",true],["VENTA_EDITADA","js/ventas/ventas.js",true],["VENTA_ELIMINADA","js/comercial/operaciones.js",true],
 ["IVA_CERRADO","js/impuestos/f07.js",false],["DEPRECIACION_SINCRONIZADA","js/depreciacion/depreciacion.js",false]
-].map(function([tipo,publicador,inventario]) {return [TIPOS_EVENTOS[tipo],Object.freeze({publicador,consumidores:Object.freeze(["proyeccionContable","reportes","dashboard"].concat(inventario ? ["inventario"] : []))})];})));
+].map(function([tipo,publicador,inventario]) {return [TIPOS_EVENTOS[tipo],Object.freeze({publicador,consumidores:Object.freeze(["proyeccionContable","reportes","dashboard"].concat(inventario ? ["inventario"] : []).concat(["PARTIDA_REGISTRADA","PARTIDA_EDITADA","PARTIDA_ELIMINADA","PARTIDAS_IMPORTADAS","DEPRECIACION_SINCRONIZADA"].includes(tipo) ? ["depreciacion"] : []))})];})));
 const POLITICA_ROUTING = Object.freeze({reintentos:2,baseMs:20,jitterMs:20,umbralFallos:2,aperturaMs:1000});
 const consumidoresRouting = new Map();
 const circuitosRouting = new Map();

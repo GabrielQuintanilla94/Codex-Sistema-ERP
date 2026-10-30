@@ -1,7 +1,7 @@
 (function configurarNavegacion() {
     const nav = document.querySelector('.navegacion-lateral');
     if (!nav) return;
-    const actual = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    const actual = (location.pathname.split('/').pop() || 'index.html').toLowerCase().replace('matriz_depreciacion.html','depreciacion.html');
     const enlaces = [
         ['index.html','Inicio','⌂'],
         ['operaciones.html','Operaciones','⇄'],

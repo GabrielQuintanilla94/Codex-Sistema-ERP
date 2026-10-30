@@ -4,32 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrar partida manual</title>
-    <link rel="stylesheet" href="css/estilos.css?v=41">
-    <style>
-        /* Garantiza que las acciones de importación sean visibles aun si el CSS global cambia. */
-        #dialogo-importar .acciones-importacion-visibles {
-            display: flex !important;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 10px;
-            position: static !important;
-            margin: 16px 0 !important;
-            padding: 12px 0 !important;
-            border-top: 1px solid #dce2ea;
-            border-bottom: 1px solid #dce2ea;
-            background: #fff !important;
-            box-shadow: none !important;
-        }
-        #dialogo-importar .acciones-importacion-visibles button {
-            display: inline-flex !important;
-            align-items: center;
-            justify-content: center;
-            min-height: 38px;
-        }
-        #dialogo-importar #confirmar-importacion:not(:disabled) {
-            min-width: 180px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/estilos.css?v=44"><link rel="stylesheet" href="css/componentes.css?v=1">
 </head>
 <body>
 <div class="app-shell">
@@ -47,7 +22,7 @@
             </div>
             <div class="acciones-encabezado">
                 <button id="boton-importar" class="boton-secundario-azul" type="button">⇧ Importar CSV</button>
-                <button id="boton-agregar" type="button">＋ Nueva partida</button>
+                <button id="boton-agregar" type="button" class="boton-primario">＋ Nueva partida</button>
             </div>
         </section>
         <section class="manual-entry-grid">
@@ -200,7 +175,7 @@
     <script src="js/depreciacion/depreciacion.js?v=50"></script>
     <script src="js/motor_contable.js?v=13"></script>
     <script src="js/eventos/tipos_eventos.js?v=50"></script>
-    <script src="js/eventos/bus_eventos.js?v=11"></script><script src="js/eventos/routing_eventos.js?v=1"></script>
+    <script src="js/eventos/bus_eventos.js?v=11"></script><script src="js/eventos/routing_eventos.js?v=2"></script>
     <script src="js/eventos/proyeccion_contable.js?v=11"></script>
     <script src="js/diario/movimientos.js?v=11"></script>
     <script src="js/diario/libro_diario.js?v=20"></script>
@@ -222,7 +197,7 @@
         });
     });
     </script>
-    <script src="js/nav.js?v=4"></script>
+    <script src="js/nav.js?v=5"></script>
 </body>
 </html>
 

@@ -9,3 +9,5 @@ El runner crea su propio servidor HTTP en un puerto libre y perfiles efímeros d
 Cubre pantallas, compras/ventas, edición/eliminación, stock, transacciones abortadas, concurrencia entre pestañas, snapshots obsoletos, corrupción de datos y recuperación, IVA, depreciación idempotente, BI mensual y CSV con confirmación/duplicados/fechas locales. Incluye comparaciones de columnas de Anexos 1/2/3 DTE 01/03 con el manual aportado, identidad fiscal, agrupación diaria, reglas históricas, importación/edición y descarga real. No realiza una presentación ante Hacienda ni simula apagado del sistema operativo.
 
 Las pruebas de routing verifican enlaces únicos, rechazo de ciclos y consumidores ausentes, proyección → Reportes, Inventario sin escrituras desde su vista, conciliación numérica entre pestañas, filtros, reintentos transitorios, Circuit Breaker con Half-Open y trazas persistidas al recargar.
+
+Las pruebas visuales comparan estilos calculados en ocho vistas, incluidos diálogos, y verifican el ancho móvil. Para guardar capturas, definir `ERP_TEST_ARTIFACTS`; el directorio se crea automáticamente.

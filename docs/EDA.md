@@ -7,13 +7,13 @@ El dominio guarda y relee cada operación mediante sus cinco fases. Solo despué
 | Eventos | Publicadores | Destinos declarados |
 | --- | --- | --- |
 | CuentaCreada / CuentaEliminada | `catalogo/catalogo_ui.js` | Proyección, Reportes, BI |
-| PartidaRegistrada / Editada / Eliminada | `diario/libro_diario.js` | Proyección, Reportes, BI, Inventario |
-| PartidasImportadas | `importacion/importador_partidas.js` | Proyección, Reportes, BI, Inventario |
+| PartidaRegistrada / Editada / Eliminada | `diario/libro_diario.js` | Proyección, Reportes, BI, Inventario, Activos/Matriz |
+| PartidasImportadas | `importacion/importador_partidas.js` | Proyección, Reportes, BI, Inventario, Activos/Matriz |
 | CompraRegistrada / CompraEditada | `compras/compras.js` | Proyección, Reportes, BI, Inventario |
 | VentaRegistrada / VentaEditada | `ventas/ventas.js` | Proyección, Reportes, BI, Inventario |
 | CompraEliminada / VentaEliminada | `comercial/operaciones.js` | Proyección, Reportes, BI, Inventario |
 | IVACerrado | `impuestos/f07.js` | Proyección, Reportes, BI |
-| DepreciacionSincronizada | `depreciacion/depreciacion.js` | Proyección, Reportes, BI |
+| DepreciacionSincronizada | `depreciacion/depreciacion.js` | Proyección, Reportes, BI, Activos/Matriz |
 
 Paths de la tabla relativos a `js/`. Los productores siguen usando los nombres existentes. Las únicas suscripciones internas al bus están en `routing_eventos.js`; cada consumidor registra una función por nombre con `registrarConsumidorContable`.
 
@@ -22,7 +22,8 @@ Paths de la tabla relativos a `js/`. Los productores siguen usando los nombres e
 - `inventario.html`: Inventario, derivado en memoria desde movimientos; no reescribe almacenes al visualizar.
 - `reportes.html`: Proyección contable y luego Reportes; se conservan fechas y tipo de reporte seleccionados.
 - `partida_manual.html` y `catalogo_cuentas.html`: Proyección contable.
-- `operaciones.html` y `depreciacion.html`: publicadores; no necesitan consumidores locales del router. Sus formularios mantienen el refresco local existente.
+- `depreciacion.html` y `matriz_depreciacion.html`: consumidor `depreciacion`; recalcula al cambiar partidas, importaciones o depreciación contabilizada.
+- `operaciones.html`: publicador; sus formularios mantienen el refresco local existente.
 
 Los eventos entre pestañas viajan por `BroadcastChannel` dentro del mismo origen/puerto. En cada página se procesan en cola serial y según el DAG. `proyeccion:actualizada` se conserva como notificación DOM de compatibilidad; Reportes ya no depende de ese listener: el router espera la proyección y después llama su consumidor directamente.
 

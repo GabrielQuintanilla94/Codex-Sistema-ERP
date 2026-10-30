@@ -70,3 +70,6 @@ Los anexos DTE 01/03 usan punto y coma; consumidor final se agrupa por día e in
 
 ## Routing EDA
 `js/eventos/routing_eventos.js` centraliza publicadores y consumidores. Consultá `obtenerEstadoRoutingEventos()` en la consola para ver rutas y conexiones de la página actual. Mapa, límites y conciliación reproducible en `docs/EDA.md`; instrucciones del archivo en `docs/instrucciones/js/eventos/routing_eventos.md`.
+
+## Apariencia común
+Las ocho vistas usan `css/componentes.css` para compartir las mismas reglas visuales. Distribuciones y mantenimiento: `docs/diseno/ESTILOS_COMPARTIDOS.md`. La matriz de depreciación solo usa adquisiciones de activo fijo con datos completos; una base vacía muestra instrucciones de registro y las adquisiciones incompletas generan un aviso.
