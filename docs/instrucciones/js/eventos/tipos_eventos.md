@@ -6,7 +6,7 @@ Conservar nombres, API, funcionalidades y arquitectura del archivo. Estas fases 
 - Funciones existentes: `crearIdEvento`, `copiarDatosEvento`, `validarEventoContable`, `crearEventoContable`.
 - Variables de nivel superior: `TIPOS_EVENTOS`.
 - Dependencias locales por llamadas: sin llamadas a funciones declaradas en otros `.js`.
-- Consumidores por llamadas: `js/eventos/bus_eventos.js`.
+- Consumidores por llamadas: `js/eventos/bus_eventos.js`, `js/eventos/routing_eventos.js`.
 - HTML que lo carga: `catalogo_cuentas.html`, `depreciacion.html`, `index.html`, `operaciones.html`, `partida_manual.html`, `reportes.html`.
 Las referencias anteriores se extraen del código; confirmar contexto de globals y listeners antes de modificar.
 <!-- Fin fase 0 -->

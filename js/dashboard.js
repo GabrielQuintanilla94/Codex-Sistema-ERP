@@ -173,15 +173,7 @@ dashboardRenderPeriodo(periodo);
 try { await dashboardRefrescoEnCurso; } finally { dashboardRefrescoEnCurso = null; }
 }
 function dashboardSuscribirEDA() {
-    if (typeof suscribirEventoContable !== "function" || typeof TIPOS_EVENTOS === "undefined") return;
-    [
-        TIPOS_EVENTOS.COMPRA_REGISTRADA, TIPOS_EVENTOS.COMPRA_EDITADA, TIPOS_EVENTOS.COMPRA_ELIMINADA,
-        TIPOS_EVENTOS.VENTA_REGISTRADA, TIPOS_EVENTOS.VENTA_EDITADA, TIPOS_EVENTOS.VENTA_ELIMINADA,
-        TIPOS_EVENTOS.PARTIDA_REGISTRADA, TIPOS_EVENTOS.PARTIDA_EDITADA, TIPOS_EVENTOS.PARTIDA_ELIMINADA,
-        TIPOS_EVENTOS.PARTIDAS_IMPORTADAS, TIPOS_EVENTOS.IVA_CERRADO, TIPOS_EVENTOS.DEPRECIACION_SINCRONIZADA
-    ].filter(Boolean).forEach(function(tipo) {
-        suscribirEventoContable(tipo, async function() { await dashboardRefrescarDesdeBD(); });
-    });
+return registrarConsumidorContable("dashboard",dashboardRefrescarDesdeBD);
 }
 async function iniciarDashboard() {
     await abrirBaseDatos();
@@ -198,9 +190,9 @@ async function iniciarDashboard() {
     document.getElementById("dashboard-periodo-actual").addEventListener("click", function() {
         dashboardRenderPeriodo(dashboardPeriodoActual());
     });
-    dashboardSuscribirEDA();
     dashboardRenderPeriodo(dashboardPeriodoSeleccionado);
 }
+dashboardSuscribirEDA();
 document.addEventListener("DOMContentLoaded", function() {
     iniciarDashboard().catch(function(e) { console.error(e); });
 });

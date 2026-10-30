@@ -6,7 +6,7 @@ Conservar nombres, API, funcionalidades y arquitectura del archivo. Estas fases 
 - Funciones existentes: `suscribirEventoContable`, `despacharEventoContable`, `publicarEventoContable`.
 - Variables de nivel superior: `manejadoresEventos`, `telemetriaEventos`, `canalEventosContables`.
 - Dependencias locales por llamadas: `js/base_datos.js`: `guardarEventoBD`; `js/eventos/tipos_eventos.js`: `crearEventoContable`, `validarEventoContable`.
-- Consumidores por llamadas: `js/catalogo/catalogo_ui.js`, `js/comercial/operaciones.js`, `js/dashboard.js`, `js/depreciacion/depreciacion.js`, `js/diario/libro_diario.js`, `js/eventos/proyeccion_contable.js`, `js/importacion/importador_partidas.js`, `js/impuestos/f07.js`.
+- Consumidores por llamadas: `js/catalogo/catalogo_ui.js`, `js/comercial/operaciones.js`, `js/depreciacion/depreciacion.js`, `js/diario/libro_diario.js`, `js/eventos/routing_eventos.js`, `js/importacion/importador_partidas.js`, `js/impuestos/f07.js`.
 - HTML que lo carga: `catalogo_cuentas.html`, `depreciacion.html`, `index.html`, `operaciones.html`, `partida_manual.html`, `reportes.html`.
 Las referencias anteriores se extraen del código; confirmar contexto de globals y listeners antes de modificar.
 <!-- Fin fase 0 -->

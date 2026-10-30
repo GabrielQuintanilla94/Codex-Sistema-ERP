@@ -406,7 +406,7 @@ function mostrarReporteCalculado(reporte) {
 function mostrarReporteDesdeProyeccion() {
     return generarReporteActualizado();
 }
-async function generarReporteActualizado() {
+async function generarReporteActualizado(propagarError) {
     bloquearGeneracionReporte(true);
     try {
         movimientosReporte = await obtenerMovimientosBD();
@@ -415,6 +415,7 @@ async function generarReporteActualizado() {
     } catch (error) {
         mensajeReporte.textContent = error.message;
         mensajeReporte.className = "mensaje-reporte error";
+        if (propagarError === true) throw error;
     } finally {
         bloquearGeneracionReporte(false);
     }
@@ -437,13 +438,8 @@ async function iniciarReportes() {
         mensajeReporte.className = "mensaje-reporte error";
     }
 }
-document.addEventListener("proyeccion:actualizada", function(evento) {
-    if (!fechaDesdeReporte.value && !fechaHastaReporte.value) {
-        mostrarReporteDesdeProyeccion(evento.detail);
-    } else {
-        generarReporteActualizado();
-    }
-});
+function refrescarReportesDesdeEvento() {return generarReporteActualizado(true);}
+registrarConsumidorContable("reportes",refrescarReportesDesdeEvento);
 botonesReportes.forEach(function(boton) {
     boton.addEventListener("click", seleccionarReporte);
 });

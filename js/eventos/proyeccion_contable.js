@@ -1,5 +1,5 @@
 ﻿const ID_PROYECCION_BALANZA = "balanza-comprobacion";
-const EVENTOS_QUE_AFECTAN_BALANZA = Object.values(TIPOS_EVENTOS);
+const EVENTOS_QUE_AFECTAN_BALANZA = Object.keys(RUTAS_EVENTOS_CONTABLES).filter(function(tipo) {return RUTAS_EVENTOS_CONTABLES[tipo].consumidores.includes("proyeccionContable");});
 async function reconstruirProyeccionContable(evento) {
 const cuentas = await obtenerCuentasBD();
 const movimientos = await obtenerMovimientosBD();
@@ -28,8 +28,6 @@ const proyeccion = await obtenerProyeccionBD(ID_PROYECCION_BALANZA);
 return proyeccion || reconstruirProyeccionContable();
 }
 function iniciarProyeccionContable() {
-EVENTOS_QUE_AFECTAN_BALANZA.forEach(function(tipo) {
-suscribirEventoContable(tipo, reconstruirProyeccionContable);
-});
+return registrarConsumidorContable("proyeccionContable",reconstruirProyeccionContable);
 }
 iniciarProyeccionContable();

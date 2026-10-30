@@ -8,9 +8,9 @@ Reconstruir y mostrar existencias, costo promedio, valor del inventario e histor
 
 ## Flujo
 1. Lee `movimientos` desde IndexedDB.
-2. Ejecuta `reconstruirInventarioDesdeMovimientos(movimientos)`.
+2. Ejecuta `construirMapaInventarioDesdeMovimientos(movimientos)` en memoria, sin reescribir IndexedDB.
 3. Renderiza existencias actuales y el historial Entrada/Salida por SKU.
-4. El botón **Actualizar** vuelve a derivar el reporte desde el Diario.
+4. El botón **Actualizar** y el consumidor `inventario` de `routing_eventos.js` vuelven a derivar el reporte desde el Diario.
 
 ## Invariante
 `inventario_ui.js` no es fuente de verdad: `Inventario = f(LibroDiario)`.

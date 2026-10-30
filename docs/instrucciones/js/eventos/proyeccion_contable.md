@@ -4,8 +4,8 @@ Conservar nombres, API, funcionalidades y arquitectura del archivo. Estas fases 
 ## Fase 0 — Paths y referencias
 - Raíz: `/workspace/Codex-Sistema-ERP`; fuente: `js/eventos/proyeccion_contable.js`.
 - Funciones existentes: `reconstruirProyeccionContable`, `obtenerBalanzaProyectada`, `iniciarProyeccionContable`.
-- Variables de nivel superior: `EVENTOS_QUE_AFECTAN_BALANZA`, `cuentas`, `movimientos`, `balanza`, `estadoResultados`, `balanceGeneral`, `proyeccion`, `proyeccion`.
-- Dependencias locales por llamadas: `js/base_datos.js`: `guardarProyeccionBD`, `obtenerCuentasBD`, `obtenerMovimientosBD`, `obtenerProyeccionBD`; `js/eventos/bus_eventos.js`: `suscribirEventoContable`; `js/motor_contable.js`: `generarBalanceGeneral`, `generarBalanzaComprobacion`, `generarEstadoResultados`.
+- Variables de nivel superior: `ID_PROYECCION_BALANZA`, `EVENTOS_QUE_AFECTAN_BALANZA`.
+- Dependencias locales por llamadas: `js/base_datos.js`: `guardarProyeccionBD`, `obtenerCuentasBD`, `obtenerMovimientosBD`, `obtenerProyeccionBD`; `js/eventos/routing_eventos.js`: `registrarConsumidorContable`; `js/motor_contable.js`: `generarBalanceGeneral`, `generarBalanzaComprobacion`, `generarEstadoResultados`.
 - Consumidores por llamadas: sin consumidores directos detectados en otros `.js`.
 - HTML que lo carga: `catalogo_cuentas.html`, `partida_manual.html`, `reportes.html`.
 Las referencias anteriores se extraen del código; confirmar contexto de globals y listeners antes de modificar.

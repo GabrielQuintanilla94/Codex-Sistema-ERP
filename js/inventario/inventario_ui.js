@@ -21,8 +21,8 @@ function verificarTotalesInventarioUI(productos, totalUnidades, valorTotalCentav
 }
 async function cargarResumenInventarioUI() {
     const movimientos = await obtenerMovimientosBD();
-    const reconstruccion = await reconstruirInventarioDesdeMovimientos(movimientos);
-    productosInventarioUI = reconstruccion.productos.slice().sort(function(a, b) {
+    const reconstruccion = construirMapaInventarioDesdeMovimientos(movimientos);
+    productosInventarioUI = Array.from(reconstruccion.estados.values()).sort(function(a, b) {
         return String(a.sku).localeCompare(String(b.sku), "es", { numeric: true });
     });
     const totalUnidades = productosInventarioUI.reduce(function(total, producto) { return total + Number(producto.cantidad || 0); }, 0);
@@ -50,7 +50,7 @@ async function cargarResumenInventarioUI() {
     }).join("") : '<p class="dashboard-vacio">Sin inventario disponible.</p>';
     document.getElementById("inventario-sin-registros").style.display = productosInventarioUI.length ? "none" : "block";
 }
-async function actualizarInventarioUI() {
+async function actualizarInventarioUI(propagarError) {
     const boton = document.getElementById("actualizar-inventario");
     boton.disabled = true;
     boton.setAttribute("aria-busy", "true");
@@ -63,11 +63,14 @@ async function actualizarInventarioUI() {
         const mensaje = document.getElementById("mensaje-inventario-reporte");
         mensaje.textContent = "No se pudo reconstruir el inventario: " + error.message;
         mensaje.className = "mensaje-movimiento error";
+        if (propagarError === true) throw error;
     } finally {
         boton.disabled = false;
         boton.setAttribute("aria-busy", "false");
     }
 }
+function refrescarInventarioDesdeEvento() {return actualizarInventarioUI(true);}
+registrarConsumidorContable("inventario",refrescarInventarioDesdeEvento);
 async function iniciarInventarioUI() {
     await abrirBaseDatos();
     await actualizarInventarioUI();

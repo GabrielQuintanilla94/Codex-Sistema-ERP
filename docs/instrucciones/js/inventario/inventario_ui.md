@@ -3,9 +3,9 @@ Conservar nombres, API, funcionalidades y arquitectura del archivo. Estas fases 
 <!-- Inicio fase 0 -->
 ## Fase 0 — Paths y referencias
 - Raíz: `/workspace/Codex-Sistema-ERP`; fuente: `js/inventario/inventario_ui.js`.
-- Funciones existentes: `dineroInventarioUI`, `escaparInventarioUI`, `verificarTotalesInventarioUI`, `cargarResumenInventarioUI`, `actualizarInventarioUI`, `iniciarInventarioUI`.
+- Funciones existentes: `dineroInventarioUI`, `escaparInventarioUI`, `verificarTotalesInventarioUI`, `cargarResumenInventarioUI`, `actualizarInventarioUI`, `refrescarInventarioDesdeEvento`, `iniciarInventarioUI`.
 - Variables de nivel superior: `productosInventarioUI`.
-- Dependencias locales por llamadas: `js/base_datos.js`: `abrirBaseDatos`, `obtenerMovimientosBD`; `js/inventario/inventario_costos.js`: `inventarioADolares`, `reconstruirInventarioDesdeMovimientos`, `verificarEstadoInventarioTresNiveles`.
+- Dependencias locales por llamadas: `js/base_datos.js`: `abrirBaseDatos`, `obtenerMovimientosBD`; `js/eventos/routing_eventos.js`: `registrarConsumidorContable`; `js/inventario/inventario_costos.js`: `construirMapaInventarioDesdeMovimientos`, `inventarioADolares`, `verificarEstadoInventarioTresNiveles`.
 - Consumidores por llamadas: sin consumidores directos detectados en otros `.js`.
 - HTML que lo carga: `inventario.html`.
 Las referencias anteriores se extraen del código; confirmar contexto de globals y listeners antes de modificar.

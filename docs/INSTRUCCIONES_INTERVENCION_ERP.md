@@ -17,6 +17,7 @@ Cada documento corresponde a un único `.js`: fase 0 con rutas y referencias rea
 - [js/diario/movimientos.js](instrucciones/js/diario/movimientos.md)
 - [js/eventos/bus_eventos.js](instrucciones/js/eventos/bus_eventos.md)
 - [js/eventos/proyeccion_contable.js](instrucciones/js/eventos/proyeccion_contable.md)
+- [js/eventos/routing_eventos.js](instrucciones/js/eventos/routing_eventos.md)
 - [js/eventos/tipos_eventos.js](instrucciones/js/eventos/tipos_eventos.md)
 - [js/importacion/importador_partidas.js](instrucciones/js/importacion/importador_partidas.md)
 - [js/importacion/partidas_worker.js](instrucciones/js/importacion/partidas_worker.md)

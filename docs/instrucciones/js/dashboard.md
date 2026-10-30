@@ -4,8 +4,8 @@ Conservar nombres, API, funcionalidades y arquitectura del archivo. Estas fases 
 ## Fase 0 — Paths y referencias
 - Raíz: `/workspace/Codex-Sistema-ERP`; fuente: `js/dashboard.js`.
 - Funciones existentes: `dashboardDinero`, `dashboardEscapar`, `dashboardFechaActual`, `dashboardPeriodoActual`, `dashboardPeriodoValido`, `dashboardDiasMes`, `dashboardRangoPeriodo`, `dashboardEtiquetaPeriodo`, `dashboardEnRango`, `dashboardSumar`, `dashboardPeriodoPrevio`, `dashboardVariacion`, `dashboardBloquesPeriodo`, `dashboardRenderTendencia`, `dashboardRenderRanking`, `dashboardRenderActividad`, `dashboardActualizarVariacion`, `dashboardElegirPeriodoInicial`, `dashboardCargarDatos`, `dashboardRenderPeriodo`, `dashboardRefrescarDesdeBD`, `dashboardSuscribirEDA`, `iniciarDashboard`.
-- Variables de nivel superior: `DASHBOARD_PERIODO_STORAGE`, `dashboardPeriodoSeleccionado`, `dashboardDatos`, `dashboardRefrescoEnCurso`, `dashboardRefrescoPendiente`, `periodo`.
-- Dependencias locales por llamadas: `js/base_datos.js`: `abrirBaseDatos`, `obtenerComprasBD`, `obtenerCuentasBD`, `obtenerMovimientosBD`, `obtenerVentasBD`; `js/eventos/bus_eventos.js`: `suscribirEventoContable`; `js/impuestos/iva.js`: `resumirIVA`; `js/motor_contable.js`: `generarBalanzaComprobacion`, `generarEstadoResultados`.
+- Variables de nivel superior: `DASHBOARD_PERIODO_STORAGE`, `dashboardPeriodoSeleccionado`, `dashboardDatos`, `dashboardRefrescoEnCurso`, `dashboardRefrescoPendiente`.
+- Dependencias locales por llamadas: `js/base_datos.js`: `abrirBaseDatos`, `obtenerComprasBD`, `obtenerCuentasBD`, `obtenerMovimientosBD`, `obtenerVentasBD`; `js/eventos/routing_eventos.js`: `registrarConsumidorContable`; `js/impuestos/iva.js`: `resumirIVA`; `js/motor_contable.js`: `generarBalanzaComprobacion`, `generarEstadoResultados`.
 - Consumidores por llamadas: sin consumidores directos detectados en otros `.js`.
 - HTML que lo carga: `index.html`.
 Las referencias anteriores se extraen del código; confirmar contexto de globals y listeners antes de modificar.
