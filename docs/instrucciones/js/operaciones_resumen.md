@@ -3,15 +3,15 @@ Conservar nombres, API, funcionalidades y arquitectura del archivo. Estas fases 
 <!-- Inicio fase 0 -->
 ## Fase 0 — Paths y referencias
 - Raíz: `/workspace/Codex-Sistema-ERP`; fuente: `js/operaciones_resumen.js`.
-- Funciones existentes: `opsDinero`, `opsPeriodoActual`, `opsCambiarTab`, `opsRefrescarResumen`.
-- Dependencias locales por llamadas: `js/base_datos.js`: `obtenerComprasBD`, `obtenerVentasBD`; `js/impuestos/f07.js`: `filtrarPorPeriodo`; `js/impuestos/iva.js`: `resumirIVA`.
-- Consumidores por llamadas: sin consumidores directos detectados en otros `.js`.
+- Funciones existentes: `opsDinero`, `opsPeriodoActual`, `opsCambiarTab`, `opsPeriodoValido`, `opsObtenerPeriodoConsulta`, `opsElegirPeriodo`, `opsMostrarError`, `opsRefrescarListados`, `opsRefrescarResumen`, `opsSeleccionarPeriodo`, `opsRefrescarConsultas`.
+- Dependencias locales por llamadas: `js/base_datos.js`: `obtenerComprasBD`, `obtenerVentasBD`, `abrirBaseDatos`; `js/impuestos/f07.js`: `filtrarPorPeriodo`; `js/impuestos/iva.js`: `resumirIVA`; `js/compras/compras_ui.js`: `refrescarCompras`; `js/ventas/ventas_ui.js`: `refrescarVentas`, `refrescarInventarioVenta`; `js/impuestos/impuestos_ui.js`: `recargarDatosImpuestos`; `js/eventos/routing_eventos.js`: `registrarConsumidorContable`.
+- Consumidores por llamadas: `js/compras/compras_ui.js`, `js/ventas/ventas_ui.js`; enlace `operaciones` en `js/eventos/routing_eventos.js`.
 - HTML que lo carga: `operaciones.html`.
 Las referencias anteriores se extraen del código; confirmar contexto de globals y listeners antes de modificar.
 <!-- Fin fase 0 -->
 <!-- Inicio fase 1 -->
 ## Fase 1 — Contrato y entrada
-Aplicación al archivo: Período actual, pestañas, compras y ventas.
+Aplicación al archivo: Período mensual válido, preferencia local, pestañas, compras y ventas; sin modificar fechas de captura ni operaciones persistidas.
 * *A. Objetivo (DDD):* [D] Precondiciones y postcondiciones finitas (Design by Contract). [A] Frontera de contexto blindada (Anti-Corruption Layer).
 * *B. Entrada (Zero-Trust):* [D] Ingesta fuertemente tipada. [A] Gatekeeping: Sanitización y validación estricta en la capa de transporte.
 * *C. Validación (Harness IAST):* [R] Verificación de invariantes de contrato. [D] Evaluación binaria determinista (Fail-Fast inmediato si es inválido).
@@ -23,7 +23,7 @@ Aplicación al archivo: Período actual, pestañas, compras y ventas.
 <!-- Fin fase 1 -->
 <!-- Inicio fase 2 -->
 ## Fase 2 — Procesamiento
-Aplicación al archivo: Resumen superior y cambio de panel activo.
+Aplicación al archivo: Resumen y listados filtrados por el mismo mes, sincronizados con IVA. Elegir el mes más reciente con datos cuando no exista preferencia explícita.
 * *A. Objetivo (DDD):* [D] Precondiciones y postcondiciones finitas (Design by Contract). [A] Frontera de contexto blindada (Anti-Corruption Layer).
 * *B. Entrada (Zero-Trust):* [D] Ingesta fuertemente tipada. [A] Gatekeeping: Sanitización y validación estricta en la capa de transporte.
 * *C. Validación (Harness IAST):* [R] Verificación de invariantes de contrato. [D] Evaluación binaria determinista (Fail-Fast inmediato si es inválido).
@@ -35,7 +35,7 @@ Aplicación al archivo: Resumen superior y cambio de panel activo.
 <!-- Fin fase 2 -->
 <!-- Inicio fase 3 -->
 ## Fase 3 — Efectos y recuperación
-Aplicación al archivo: Lecturas asíncronas y actualizaciones DOM existentes.
+Aplicación al archivo: Lecturas asíncronas, invalidaciones agrupadas y consumidor operaciones del router; ningún cálculo contable nuevo.
 * *A. Objetivo (DDD):* [D] Precondiciones y postcondiciones finitas (Design by Contract). [A] Frontera de contexto blindada (Anti-Corruption Layer).
 * *B. Entrada (Zero-Trust):* [D] Ingesta fuertemente tipada. [A] Gatekeeping: Sanitización y validación estricta en la capa de transporte.
 * *C. Validación (Harness IAST):* [R] Verificación de invariantes de contrato. [D] Evaluación binaria determinista (Fail-Fast inmediato si es inválido).
@@ -47,7 +47,7 @@ Aplicación al archivo: Lecturas asíncronas y actualizaciones DOM existentes.
 <!-- Fin fase 3 -->
 <!-- Inicio fase 4 -->
 ## Fase 4 — Verificación y entrega
-Aplicación al archivo: Coherencia del resumen y pestaña seleccionada.
+Aplicación al archivo: Coherencia mensual de indicadores, listados e IVA; persistencia de selección al recargar y estados vacíos sin alteración de datos.
 * *A. Objetivo (DDD):* [D] Precondiciones y postcondiciones finitas (Design by Contract). [A] Frontera de contexto blindada (Anti-Corruption Layer).
 * *B. Entrada (Zero-Trust):* [D] Ingesta fuertemente tipada. [A] Gatekeeping: Sanitización y validación estricta en la capa de transporte.
 * *C. Validación (Harness IAST):* [R] Verificación de invariantes de contrato. [D] Evaluación binaria determinista (Fail-Fast inmediato si es inválido).

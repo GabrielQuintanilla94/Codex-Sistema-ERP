@@ -73,3 +73,6 @@ Los anexos DTE 01/03 usan punto y coma; consumidor final se agrupa por día e in
 
 ## Apariencia común
 Las ocho vistas usan `css/componentes.css` para compartir las mismas reglas visuales. Distribuciones y mantenimiento: `docs/diseno/ESTILOS_COMPARTIDOS.md`. La matriz de depreciación solo usa adquisiciones de activo fijo con datos completos; una base vacía muestra instrucciones de registro y las adquisiciones incompletas generan un aviso.
+
+## Consulta mensual en Operaciones
+El selector **Período de consulta** filtra indicadores, compras, ventas e IVA/F07. La elección explícita se recuerda al recargar; sin preferencia se muestra el mes más reciente con operaciones. Un mes vacío muestra ceros y mensajes sin eliminar datos. La fecha de captura permanece independiente.

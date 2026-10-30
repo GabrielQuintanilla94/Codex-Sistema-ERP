@@ -99,7 +99,7 @@ async function refrescarInventarioVenta() {
     llenarProductos();
 }
 async function refrescarVentas() {
-    const ventas = (await obtenerVentasBD()).slice().sort(function(a, b) {
+    const ventas = filtrarPorPeriodo(await obtenerVentasBD(),opsObtenerPeriodoConsulta()).slice().sort(function(a, b) {
         return String(b.fecha || "").localeCompare(String(a.fecha || "")) || String(b.id || "").localeCompare(String(a.id || ""));
     });
     document.getElementById("ventas-registradas").innerHTML = ventas.map(function(v) {

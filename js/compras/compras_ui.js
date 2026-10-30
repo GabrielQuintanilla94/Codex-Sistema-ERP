@@ -56,7 +56,7 @@ function ordenarComprasParaUI(compras) {
     });
 }
 async function refrescarCompras() {
-    const compras = ordenarComprasParaUI(await obtenerComprasBD());
+    const compras = ordenarComprasParaUI(filtrarPorPeriodo(await obtenerComprasBD(),opsObtenerPeriodoConsulta()));
     document.getElementById("compras-registradas").innerHTML = compras.map(function(c) {
         return `<tr><td>${c.fecha}</td><td>${c.documento}</td><td>${c.proveedor}</td><td>${c.nrc}</td><td>${dineroCompra(c.comprasGravadas)}</td><td>${dineroCompra(c.ivaCredito)}</td><td>${dineroCompra(c.total)}</td><td><div class="acciones-fila"><button type="button" class="boton-secundario-azul editar-compra" data-id="${c.id}">Editar</button><button type="button" class="boton-peligro eliminar-compra" data-id="${c.id}">Eliminar</button></div></td></tr>`;
     }).join("");

@@ -23,7 +23,7 @@ Paths de la tabla relativos a `js/`. Los productores siguen usando los nombres e
 - `reportes.html`: Proyección contable y luego Reportes; se conservan fechas y tipo de reporte seleccionados.
 - `partida_manual.html` y `catalogo_cuentas.html`: Proyección contable.
 - `depreciacion.html` y `matriz_depreciacion.html`: consumidor `depreciacion`; recalcula al cambiar partidas, importaciones o depreciación contabilizada.
-- `operaciones.html`: publicador; sus formularios mantienen el refresco local existente.
+- `operaciones.html`: publicador y consumidor `operaciones`; refresca consultas mensuales al registrar, editar o eliminar compras/ventas y cerrar IVA, incluso desde otras pestañas. No cambia las fechas de los formularios.
 
 Los eventos entre pestañas viajan por `BroadcastChannel` dentro del mismo origen/puerto. En cada página se procesan en cola serial y según el DAG. `proyeccion:actualizada` se conserva como notificación DOM de compatibilidad; Reportes ya no depende de ese listener: el router espera la proyección y después llama su consumidor directamente.
 
