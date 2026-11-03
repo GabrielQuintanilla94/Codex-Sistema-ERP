@@ -9,7 +9,7 @@ let servidor,browser,origen;
 before(async()=>{
 servidor=http.createServer(async(req,res)=>{try{const nombre=decodeURIComponent(new URL(req.url,'http://localhost').pathname);const archivo=path.resolve(raiz,'.'+nombre);if(!archivo.startsWith(raiz+path.sep))throw Error();const contenido=await fs.readFile(archivo);res.setHeader('Content-Type',({'.html':'text/html','.js':'text/javascript','.json':'application/json','.css':'text/css'})[path.extname(archivo)]||'text/plain');res.end(contenido);}catch{res.statusCode=404;res.end();}});
 await new Promise(resolve=>servidor.listen(0,'127.0.0.1',resolve));origen='http://127.0.0.1:'+servidor.address().port;
-browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox']});
+browser=await chromium.launch(require('../scripts/qa-entorno.cjs').opcionesChromium());
 });
 after(async()=>{await browser?.close();await new Promise(resolve=>servidor?.close(resolve));});
 async function pagina(nombre='operaciones',ejecutar){const contexto=await browser.newContext();try{const p=await contexto.newPage();await p.goto(origen+'/'+nombre+'.html');await p.waitForFunction(()=>typeof baseDatos!=='undefined'&&baseDatos);if(nombre==='operaciones')await p.waitForFunction(()=>document.querySelector('#compra-proveedor option')!==null);await ejecutar(p,contexto);}finally{await contexto.close();}}

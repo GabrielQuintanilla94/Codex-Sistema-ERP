@@ -1,0 +1,3 @@
+'use strict';
+const util=require('node:util');
+module.exports=async function*(eventos){for await(const evento of eventos){const d=evento.data||{};if(evento.type==='test:coverage'){yield JSON.stringify({tipo:evento.type,datos:d})+'\n';continue;}if(['test:pass','test:fail'].includes(evento.type)){yield JSON.stringify({tipo:evento.type,nombre:d.name,archivo:d.file,duracion:d.details?.duration_ms||0,suite:d.details?.type==='suite',omitida:Boolean(d.skip),pendiente:Boolean(d.todo),error:d.details?.error?util.inspect(d.details.error,{depth:4}):null})+'\n';}else if(['test:stdout','test:stderr','test:diagnostic'].includes(evento.type))yield JSON.stringify({tipo:evento.type,mensaje:d.message})+'\n';}};
