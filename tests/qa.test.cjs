@@ -13,6 +13,7 @@ try{for(const [nombre,texto,estado] of [
 ['falla',"require('node:test').test('caso',()=>{throw Error('fallo intencional');});",'fallida'],
 ['omite',"require('node:test').test('caso',{skip:true},()=>{});",'omitida']]){
 const archivo=path.join(dir,nombre+'.cjs');await fs.writeFile(archivo,texto);const r=await ejecutarArchivo(archivo,'Control');assert.equal(r.casos[0].estado,estado);assert.equal(evaluarEtapa(r,1).length===0,estado==='aprobada');}
+const inexistente=await ejecutarArchivo(path.join(dir,'inexistente.cjs'),'Control');assert.ok(inexistente.errores.some(e=>e.includes('Could not find')));
 const vacio=path.join(dir,'vacio.cjs');await fs.writeFile(vacio,'');const r=await ejecutarArchivo(vacio,'Control');assert.ok(evaluarEtapa(r,2).length>0);
 }finally{await fs.rm(dir,{recursive:true,force:true});}
 });
@@ -24,4 +25,11 @@ assert.equal(evaluarCobertura({files}).errores.length,2);
 test('Reporte escapa contenido y mantiene aceptación pendiente',()=>{
 const r={estado:'fallida',id:'prueba',fecha:'hoy',commit:'abc',node:'24',plataforma:'linux',duracionMs:1,sintaxis:{archivos:1},errores:['<script>alert(1)</script>'],cobertura:{archivos:[]},etapas:[]};
 const html=informe(r);assert.ok(!html.includes('<script>'));assert.ok(html.includes('&lt;script&gt;'));assert.ok(html.includes('Aceptación manual: PENDIENTE'));
+});
+
+test('Reportero usa URL file portable y conserva la ruta original',()=>{
+const {reporteroURL}=require('../scripts/qa-motor.cjs');
+const {fileURLToPath}=require('node:url');
+assert.ok(reporteroURL.startsWith('file:'));
+assert.equal(fileURLToPath(reporteroURL),path.resolve(__dirname,'../scripts/qa-reportero.cjs'));
 });

@@ -11,3 +11,7 @@ Verificado el 2026-11-03 en Linux, Node.js 24.19.0, Playwright 1.64.1 y Chromium
 - Sintaxis de los nuevos scripts y pruebas válida; `git diff --check` sin errores.
 
 El HTML identifica fecha, ejecución y commit. Conserva aceptación manual PENDIENTE. Los perfiles de navegador de integración son efímeros; no se usa la base de datos del usuario. Los artefactos se generan localmente, fuera de Git.
+
+## Compatibilidad del reportero en Windows
+
+Se cambió el argumento `--test-reporter` de ruta absoluta a URL `file:` mediante `pathToFileURL`, para evitar que el cargador ESM interprete `C:` como un protocolo. También se muestran los errores estándar del proceso fallido en la terminal. El control del lanzador ahora incluye la URL del reportero (4 controles). La ejecución nativa en Windows queda por confirmar en el equipo del usuario.
