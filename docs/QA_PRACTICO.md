@@ -20,7 +20,7 @@ Utiliza Chromium instalado o Edge/Chrome detectado. Si falta navegador, descarga
 1. Ejecutar `npm.cmd run qa` y mostrar el resultado de la terminal.
 2. Mostrar los casos aprobados/fallidos y la cobertura en el HTML.
 3. Mostrar fecha, identificador de ejecución y commit para identificar la evidencia.
-4. Completar la aceptación manual durante la demostración e imprimir el reporte como PDF.
+4. Desplegar los casos y la explicación de cobertura; guardar el reporte como PDF si necesitás evidencia.
 
 El HTML incluye enlaces a JSON y registros. Cada ejecución conserva su propia carpeta; el último reporte se actualiza incluso si la ejecución queda bloqueada. `npm.cmd run qa:abrir` vuelve a abrir el último reporte. `npm.cmd test` ejecuta lo mismo sin abrir el navegador.
 
@@ -31,7 +31,7 @@ El HTML incluye enlaces a JSON y registros. Cada ejecución conserva su propia c
 - Por cada archivo medido: líneas ≥90%, ramas ≥90% y funciones 100%.
 - El proceso devuelve código 0 si aprueba; devuelve 1 ante fallo, prerrequisito ausente, cobertura insuficiente o salida inválida.
 
-La cobertura solo mide `js/impuestos/iva.js` y `js/motor_contable.js`, mediante V8 y las pruebas unitarias; no significa que todo el ERP tenga esa cobertura. La regresión es la repetición de los casos existentes. La aceptación del usuario y la conciliación con sus documentos siguen siendo manuales. Estos umbrales son criterios del proyecto, no una garantía de calificación ni un estándar universal.
+La cobertura solo mide `js/impuestos/iva.js` y `js/motor_contable.js`, mediante V8 y las pruebas unitarias; no significa que todo el ERP tenga esa cobertura. La regresión es la repetición de los casos existentes. El reporte muestra únicamente pruebas automáticas con datos de ejemplo, sin formulario de evaluación manual. La conciliación de tus documentos reales no forma parte de esas pruebas. Estos umbrales son criterios del proyecto, no una garantía de calificación ni un estándar universal.
 
 Para comprobar el mecanismo del reporte ante fallos:
 

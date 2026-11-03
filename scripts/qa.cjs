@@ -9,7 +9,7 @@ const {abrirReporte}=require('./qa-abrir.cjs');
 async function main(){
 const inicio=Date.now(),id=new Date().toISOString().replace(/[:.]/g,'-')+'-'+randomUUID().slice(0,8),directorio=path.join(raiz,'reportes-qa'),historial=path.join(directorio,id);
 let commit='sin información';try{commit=execFileSync('git',['rev-parse','--short','HEAD'],{cwd:raiz,encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim();}catch{}
-const r={id,fecha:new Date().toISOString(),commit,node:process.version,plataforma:process.platform,estado:'en curso',duracionMs:0,sintaxis:null,etapas:[],cobertura:{archivos:[]},errores:[],aceptacionManual:'pendiente'};
+const r={id,fecha:new Date().toISOString(),commit,node:process.version,plataforma:process.platform,estado:'en curso',duracionMs:0,sintaxis:null,etapas:[],cobertura:{archivos:[]},errores:[]};
 await fs.mkdir(historial,{recursive:true});
 async function guardar(){r.duracionMs=Date.now()-inicio;await fs.writeFile(path.join(historial,'resultado.json'),JSON.stringify(r,null,2));await fs.writeFile(path.join(historial,'index.html'),informe(r));await fs.writeFile(path.join(directorio,'index.html'),informe(r,id+'/'));}
 await guardar();

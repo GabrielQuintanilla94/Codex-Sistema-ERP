@@ -15,3 +15,9 @@ El HTML identifica fecha, ejecución y commit. Conserva aceptación manual PENDI
 ## Compatibilidad del reportero en Windows
 
 Se cambió el argumento `--test-reporter` de ruta absoluta a URL `file:` mediante `pathToFileURL`, para evitar que el cargador ESM interprete `C:` como un protocolo. También se muestran los errores estándar del proceso fallido en la terminal. El control del lanzador ahora incluye la URL del reportero (4 controles). La ejecución nativa en Windows queda por confirmar en el equipo del usuario.
+
+## Reporte simplificado
+
+Se retiró el formulario de aceptación manual del HTML y su campo del JSON. El resumen separa pruebas que pasaron, fallaron y quedaron sin completar; explica datos de ejemplo, rechazos esperados y cobertura. Nombres técnicos, registros y metadatos quedan desplegables.
+
+Verificación: 5 controles del lanzador/reporte aprobados. Se renderizó el nuevo HTML en Chromium usando la última ejecución real de 84 casos, comprobando conteos 84/0/0, apertura de casos, ausencia del formulario manual, ausencia de errores JavaScript y ancho móvil de 375 px sin desbordamiento. No se modificaron cálculos, operaciones ni sus pruebas.

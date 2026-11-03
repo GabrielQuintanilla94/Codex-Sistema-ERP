@@ -22,9 +22,9 @@ assert.equal(evaluarCobertura(null).errores.length,2);
 const files=['js/impuestos/iva.js','js/motor_contable.js'].map(f=>({path:path.resolve(__dirname,'..',f),coveredLinePercent:100,coveredBranchPercent:89,coveredFunctionPercent:100,lines:[]}));
 assert.equal(evaluarCobertura({files}).errores.length,2);
 });
-test('Reporte escapa contenido y mantiene aceptación pendiente',()=>{
+test('Reporte escapa contenido y elimina el formulario manual',()=>{
 const r={estado:'fallida',id:'prueba',fecha:'hoy',commit:'abc',node:'24',plataforma:'linux',duracionMs:1,sintaxis:{archivos:1},errores:['<script>alert(1)</script>'],cobertura:{archivos:[]},etapas:[]};
-const html=informe(r);assert.ok(!html.includes('<script>'));assert.ok(html.includes('&lt;script&gt;'));assert.ok(html.includes('Aceptación manual: PENDIENTE'));
+const html=informe(r);assert.ok(!html.includes('<script>'));assert.ok(html.includes('&lt;script&gt;'));assert.ok(!html.includes('Aceptación manual'));assert.ok(html.includes('Problemas encontrados'));assert.ok(!html.includes('Evaluador:'));
 });
 
 test('Reportero usa URL file portable y conserva la ruta original',()=>{
@@ -32,4 +32,14 @@ const {reporteroURL}=require('../scripts/qa-motor.cjs');
 const {fileURLToPath}=require('node:url');
 assert.ok(reporteroURL.startsWith('file:'));
 assert.equal(fileURLToPath(reporteroURL),path.resolve(__dirname,'../scripts/qa-reportero.cjs'));
+});
+
+test('Reporte explica rechazo de datos y cobertura sin alterar resultados',()=>{
+const r={estado:'aprobada',id:'casos',fecha:'2026-11-03T12:00:00Z',commit:'abc',node:'24',plataforma:'win32',duracionMs:1000,sintaxis:{archivos:31},errores:[],cobertura:{archivos:[{archivo:'js/impuestos/iva.js',lineas:100,ramas:96.55,funciones:100}]},etapas:[{categoria:'Unitarias',casos:[{nombre:'[UNIT] IVA rechaza base inválida NaN',estado:'aprobada',duracionMs:1,error:null}]}]};
+const html=informe(r,'ejecucion/');
+assert.ok(html.includes('IVA rechaza base inválida valor no numérico'));
+assert.ok(html.includes('lo esperado es que el sistema lo rechace'));
+assert.ok(html.includes('1/1 pasaron'));assert.ok(html.includes('96.55%'));
+assert.ok(html.includes('ejecucion/resultado.json'));assert.ok(html.includes('ejecucion/etapa-1.log'));
+assert.ok(html.includes('No revisan las operaciones que cargaste'));
 });
