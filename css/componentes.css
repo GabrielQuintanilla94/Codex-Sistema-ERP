@@ -8,7 +8,7 @@
 body{font-family:Arial,Helvetica,sans-serif;background:var(--erp-bg);color:var(--erp-text)}
 :is(.app-shell,dialog) .marca-app span{background:var(--erp-blue);color:#fff}
 :is(.app-shell,dialog) :is(.encabezado-pagina,.cabecera-dashboard,.directorio-reportes-cabecera){text-align:left;padding:0 0 16px;margin-bottom:16px;border:0;border-bottom:1px solid var(--erp-border);border-radius:0;background:none;box-shadow:none}
-:is(.app-shell,dialog) :is(.encabezado-pagina,.cabecera-dashboard,.directorio-reportes-cabecera) h1{font-size:30px;font-weight:700;letter-spacing:-.5px;line-height:1.2;color:var(--erp-text);margin:7px 0 6px}
+:is(.app-shell,dialog) :is(.encabezado-pagina,.cabecera-dashboard,.directorio-reportes-cabecera) :is(h1,.titulo-pagina){font-size:30px;font-weight:700;letter-spacing:-.5px;line-height:1.2;color:var(--erp-text);margin:7px 0 6px}
 :is(.app-shell,dialog) :is(.encabezado-pagina,.cabecera-dashboard,.directorio-reportes-cabecera) p{font-size:13px;line-height:1.5;color:var(--erp-muted);margin:0}
 :is(.app-shell,dialog) :is(.etiqueta-version,.status-chip){color:var(--erp-blue);background:var(--erp-blue-soft);border-color:var(--erp-border)}
 :is(.app-shell,dialog) :is(.panel-reporte,.panel-libro,.panel-matriz-cuentas,.panel-catalogo,.transaction-document,.asset-card){border:1px solid var(--erp-border);border-radius:var(--ui-radius);background:var(--erp-panel);box-shadow:var(--ui-shadow)}
@@ -44,10 +44,11 @@ button:disabled{cursor:not-allowed;opacity:.55}
 :is(.app-shell,dialog) .sin-resultados{color:var(--erp-muted);font-size:12px;line-height:1.7;padding:28px 16px}
 :is(.app-shell,dialog) .sin-resultados a{display:inline-block;margin-top:8px}
 :is(.app-shell,dialog) dialog{border:1px solid var(--erp-border);border-radius:var(--ui-radius);background:var(--erp-panel);color:var(--erp-text)}
-@media(max-width:760px){:is(.app-shell,dialog) :is(.encabezado-pagina,.cabecera-dashboard,.directorio-reportes-cabecera) h1{font-size:25px}:is(.app-shell,dialog) :is(.kpi-strip,.asset-summary,.resumen-general,.resumen-impuestos){grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){:is(.app-shell,dialog) :is(.encabezado-pagina,.cabecera-dashboard,.directorio-reportes-cabecera) :is(h1,.titulo-pagina){font-size:25px}:is(.app-shell,dialog) :is(.kpi-strip,.asset-summary,.resumen-general,.resumen-impuestos){grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:420px){:is(.app-shell,dialog) :is(.kpi-strip,.asset-summary,.resumen-general,.resumen-impuestos){grid-template-columns:1fr}}
 
 :is(.app-shell,dialog) :is(.manual-action-icon,.icono-reporte){background:var(--erp-blue-soft);color:var(--erp-blue)}
 :is(.app-shell,dialog) :is(.dashboard-header-actions,.acciones-encabezado,.assets-header-actions){display:flex;flex-wrap:wrap;gap:10px;min-width:0}
 
 @media(max-width:760px){body{padding-bottom:80px}}
+:is(.app-shell,dialog) .acciones-encabezado.acciones-con-margen{margin-top:12px}

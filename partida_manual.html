@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrar partida manual</title>
-    <link rel="stylesheet" href="css/estilos.css?v=44"><link rel="stylesheet" href="css/componentes.css?v=1">
+    <link rel="stylesheet" href="css/estilos.css?v=44"><link rel="stylesheet" href="css/componentes.css?v=2">
 </head>
 <body>
 <div class="app-shell">
@@ -36,7 +36,7 @@
                 <div><span class="dashboard-kicker">CARGA MASIVA</span><h2>Importar desde CSV</h2><p>Valide múltiples partidas antes de guardarlas. Las rechazadas no se contabilizan.</p></div>
                 <button type="button" class="boton-secundario-azul manual-trigger" data-target="boton-importar">Abrir importador</button>
             </article>
-            <aside class="panel-reporte manual-help-card">
+            <aside class="panel-reporte manual-help-card" aria-label="Después de guardar">
                 <div class="titulo-reporte"><div><span class="dashboard-kicker">FLUJO CONTABLE</span><h2>Después de guardar</h2></div></div>
                 <div class="impact-list"><span><b>1.</b> Valida Debe = Haber</span><span><b>2.</b> Guarda en el Libro Diario</span><span><b>3.</b> Actualiza Balanza y reportes</span><span><b>4.</b> Reconstruye inventario/PPE si aplica</span></div>
                 <a class="link-contextual" href="reportes.html">Consultar reportes →</a>
@@ -72,15 +72,15 @@
                 </label>
                 <label>
                     Número de partida
-                    <input id="movimiento-numero" maxlength="20" placeholder="Ej. JE-0005" required>
+                    <input id="movimiento-numero" type="text" maxlength="20" placeholder="Ej. JE-0005" required>
                 </label>
                 <label>
                     Referencia
-                    <input id="movimiento-referencia" maxlength="30" placeholder="Ej. AJ-005">
+                    <input id="movimiento-referencia" type="text" maxlength="30" placeholder="Ej. AJ-005">
                 </label>
                 <label class="campo-completo">
                     Concepto general
-                    <input id="movimiento-concepto" maxlength="100" placeholder="Descripción general de la partida" required>
+                    <input id="movimiento-concepto" type="text" maxlength="100" placeholder="Descripción general de la partida" required>
                 </label>
             </div>
 

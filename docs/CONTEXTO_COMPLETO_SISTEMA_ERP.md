@@ -345,6 +345,10 @@ Estos porcentajes no son una calificación de calidad ni cobertura de todo el ER
 
 La regresión consiste en repetir los mismos casos tras cambios; no sumarla como una suite nueva para inflar el número. La guía inicial de prueba unitaria tenía ejemplos propios: no confundir sus conteos ilustrativos con los 34 casos reales del ERP.
 
+### Actualización (9 de noviembre de 2026): QA estático HTML5
+
+Se agregó una tercera etapa al QA: `tests/html/estatico.test.cjs` (17 casos) con `scripts/qa-html.cjs` y html-validate 11.16.4. El total del comando principal pasa a **101 casos** (34 + 17 + 50) y requiere Node.js 24.8 o posterior. El diagnóstico inicial fue 9,4/10 (4 defectos mayores) y, tras el refactor, 10/10, con capturas idénticas píxel a píxel. Detalle en `docs/QA_ESTATICO_HTML5.md`.
+
 ## 12. Problemas encontrados en Windows y correcciones
 
 ### Git local antes del QA

@@ -78,4 +78,6 @@ Las ocho vistas usan `css/componentes.css` para compartir las mismas reglas visu
 El selector **Período de consulta** filtra indicadores, compras, ventas e IVA/F07. La elección explícita se recuerda al recargar; sin preferencia se muestra el mes más reciente con operaciones. Un mes vacío muestra ceros y mensajes sin eliminar datos. La fecha de captura permanece independiente.
 
 ## QA desde VS Code
-Con Node.js 24 o posterior, ejecutar una vez `npm.cmd ci` y después `npm.cmd run qa` en la terminal PowerShell. Ejecuta las pruebas y abre el reporte HTML con resultados y cobertura. Guía de demostración, criterios y límites: [QA práctico](docs/QA_PRACTICO.md).
+Con Node.js 24.8 o posterior, ejecutar una vez `npm.cmd ci` y después `npm.cmd run qa` en la terminal PowerShell. Ejecuta las pruebas y abre el reporte HTML con resultados y cobertura. Guía de demostración, criterios y límites: [QA práctico](docs/QA_PRACTICO.md).
+
+`npm.cmd run qa:html` ejecuta solo la prueba estática del HTML5 (nota 1–10 por pantalla). Prompt, reglas, métricas ISTQB, diagnósticos y fuentes: [QA estático HTML5](docs/QA_ESTATICO_HTML5.md).

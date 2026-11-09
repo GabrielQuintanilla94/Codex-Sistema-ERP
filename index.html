@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Centro de control contable</title>
-    <link rel="stylesheet" href="css/estilos.css?v=44"><link rel="stylesheet" href="css/componentes.css?v=1">
+    <link rel="stylesheet" href="css/estilos.css?v=44"><link rel="stylesheet" href="css/componentes.css?v=2">
 </head>
 <body>
 <div class="app-shell">
@@ -41,11 +41,11 @@
                     <div><span class="dashboard-kicker">TENDENCIA OPERATIVA</span><h2>Ventas y compras</h2><p>Comparación de base gravada dentro del período seleccionado.</p></div>
                     <a href="reportes.html" class="link-contextual">Ver reportes →</a>
                 </div>
-                <div id="dashboard-tendencia" class="trend-chart" aria-label="Tendencia de ventas y compras"></div>
+                <div id="dashboard-tendencia" class="trend-chart" role="img" aria-label="Tendencia de ventas y compras"></div>
                 <div class="chart-legend"><span><i class="legend-dot ventas"></i>Ventas</span><span><i class="legend-dot compras"></i>Compras</span></div>
             </article>
 
-            <aside class="panel-reporte dashboard-side-card">
+            <aside class="panel-reporte dashboard-side-card" aria-label="IVA del período">
                 <div class="titulo-reporte"><div><span class="dashboard-kicker">CIERRE FISCAL</span><h2>IVA del período</h2><p id="dashboard-periodo-iva">Período actual</p></div></div>
                 <div class="fiscal-mini-grid">
                     <div><span>Débito fiscal</span><strong id="dashboard-iva-debito">$0.00</strong></div>
@@ -64,7 +64,7 @@
                 <div id="dashboard-gastos-ranking" class="ranking-bars"></div>
             </article>
 
-            <aside class="panel-reporte dashboard-side-card quick-actions-card">
+            <aside class="panel-reporte dashboard-side-card quick-actions-card" aria-label="Accesos rápidos">
                 <div class="titulo-reporte"><div><span class="dashboard-kicker">ACCESOS RÁPIDOS</span><h2>Trabajar ahora</h2></div></div>
                 <div class="quick-actions">
                     <a href="operaciones.html#ventas"><span>↑</span><div><strong>Registrar venta</strong><small>Ingreso + IVA + inventario</small></div></a>

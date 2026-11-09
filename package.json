@@ -3,12 +3,18 @@
   "version": "1.0.0",
   "private": true,
   "description": "ERP académico estático con QA local desde VS Code",
-  "engines": { "node": ">=24.0.0" },
+  "engines": {
+    "node": ">=24.8.0"
+  },
   "scripts": {
     "qa": "node scripts/qa.cjs",
     "qa:preparar": "node scripts/qa-entorno.cjs",
     "qa:abrir": "node scripts/qa-abrir.cjs",
+    "qa:html": "node scripts/qa-html.cjs",
     "test": "node scripts/qa.cjs --no-open"
   },
-  "devDependencies": { "playwright": "1.64.1" }
+  "devDependencies": {
+    "html-validate": "11.16.4",
+    "playwright": "1.64.1"
+  }
 }
