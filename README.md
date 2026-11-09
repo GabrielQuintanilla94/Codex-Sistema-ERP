@@ -1,6 +1,6 @@
 # Libro Diario - Sistema contable
 
-Aplicación local hecha con HTML, CSS y JavaScript. No usa npm ni paquetes externos.
+Aplicación local hecha con HTML, CSS y JavaScript. Para funcionar no necesita npm ni paquetes externos; npm solo se usa para ejecutar el QA (ver «QA desde VS Code»).
 
 ## Módulos
 
@@ -15,7 +15,7 @@ Aplicación local hecha con HTML, CSS y JavaScript. No usa npm ni paquetes exter
 - `js/eventos/`: comunicación EDA e historial de eventos.
 - `docs/procesos/`: contrato A-H de cada archivo JavaScript.
 - `tests/`: pruebas de las reglas principales.
-- `scripts/verificar_proyecto.ps1`: revisión automática sin instalar paquetes.
+- `scripts/qa.cjs`: lanzador del QA (sintaxis, pruebas, cobertura y reporte HTML).
 
 ## Ejecución
 
@@ -24,7 +24,7 @@ Aplicación local hecha con HTML, CSS y JavaScript. No usa npm ni paquetes exter
 3. Use siempre el mismo origen y puerto para conservar IndexedDB. Para acceso remoto use HTTPS: las mutaciones usan Web Locks. No abra los archivos mediante `file://`.
 
 ## Verificación
-Las pruebas actuales están en `tests/integracion.cjs`; ejecución y requisitos en `tests/README.md`. Usan Chromium e IndexedDB real con perfiles temporales. Los antiguos `tests/pruebas.html` y `scripts/verificar_proyecto.ps1` no estaban incluidos en el ZIP original.
+Las pruebas unitarias están en `tests/unit/contabilidad.test.cjs` y las de integración en `tests/integracion.cjs`; ejecución y requisitos en `tests/README.md`. Las de integración usan Chromium e IndexedDB real con perfiles temporales.
 
 Los cambios de integridad están documentados en `docs/verificaciones/VERIFICACION_CORRECCIONES_INTEGRIDAD.md`; las instrucciones por archivo están en `docs/INSTRUCCIONES_INTERVENCION_ERP.md`.
 
