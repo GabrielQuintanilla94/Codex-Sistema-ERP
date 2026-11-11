@@ -3,9 +3,9 @@ Conservar nombres, API, funcionalidades y arquitectura del archivo. Estas fases 
 <!-- Inicio fase 0 -->
 ## Fase 0 — Paths y referencias
 - Raíz: `/workspace/Codex-Sistema-ERP`; fuente: `js/dashboard.js`.
-- Funciones existentes: `dashboardDinero`, `dashboardEscapar`, `dashboardFechaActual`, `dashboardPeriodoActual`, `dashboardPeriodoValido`, `dashboardDiasMes`, `dashboardRangoPeriodo`, `dashboardEtiquetaPeriodo`, `dashboardEnRango`, `dashboardSumar`, `dashboardPeriodoPrevio`, `dashboardVariacion`, `dashboardBloquesPeriodo`, `dashboardRenderTendencia`, `dashboardRenderRanking`, `dashboardRenderActividad`, `dashboardActualizarVariacion`, `dashboardElegirPeriodoInicial`, `dashboardCargarDatos`, `dashboardRenderPeriodo`, `dashboardRefrescarDesdeBD`, `dashboardSuscribirEDA`, `iniciarDashboard`.
-- Variables de nivel superior: `DASHBOARD_PERIODO_STORAGE`, `dashboardPeriodoSeleccionado`, `dashboardDatos`, `dashboardRefrescoEnCurso`, `dashboardRefrescoPendiente`.
-- Dependencias locales por llamadas: `js/base_datos.js`: `abrirBaseDatos`, `obtenerComprasBD`, `obtenerCuentasBD`, `obtenerMovimientosBD`, `obtenerVentasBD`; `js/eventos/routing_eventos.js`: `registrarConsumidorContable`; `js/impuestos/iva.js`: `resumirIVA`; `js/motor_contable.js`: `generarBalanzaComprobacion`, `generarEstadoResultados`.
+- Funciones existentes: `dashboardDinero`, `dashboardEscapar`, `dashboardFechaActual`, `dashboardPeriodoActual`, `dashboardPeriodoValido`, `dashboardDiasMes`, `dashboardRangoPeriodo`, `dashboardFormatearMes`, `dashboardEtiquetaPeriodo`, `dashboardEtiquetaCorta`, `dashboardEnRango`, `dashboardSumar`, `dashboardDesplazarPeriodo`, `dashboardPeriodoPrevio`, `dashboardPeriodoSiguiente`, `dashboardVariacion`, `dashboardDisponibilidad`, `dashboardSerieMensual`, `dashboardComposicionResultado`, `dashboardTexto`, `dashboardRenderTendencia`, `dashboardRenderRanking`, `dashboardRenderActividad`, `dashboardActualizarVariacion`, `dashboardRenderKPI`, `dashboardRenderResultado`, `dashboardRenderIVA`, `dashboardElegirPeriodoInicial`, `dashboardCargarDatos`, `dashboardRenderPeriodo`, `dashboardRefrescarDesdeBD`, `dashboardSuscribirEDA`, `iniciarDashboard`. `dashboardBloquesPeriodo` se retiró en noviembre de 2026: la tendencia de 6 meses la reemplaza.
+- Variables de nivel superior: `DASHBOARD_PERIODO_STORAGE`, `DASHBOARD_MESES_TENDENCIA`, `dashboardPeriodoSeleccionado`, `dashboardDatos`, `dashboardRefrescoEnCurso`, `dashboardRefrescoPendiente`.
+- Dependencias locales por llamadas: `js/base_datos.js`: `abrirBaseDatos`, `obtenerComprasBD`, `obtenerCuentasBD`, `obtenerMovimientosBD`, `obtenerVentasBD`; `js/eventos/routing_eventos.js`: `registrarConsumidorContable`; `js/impuestos/iva.js`: `resumirIVA`; `js/motor_contable.js`: `generarBalanzaComprobacion`, `generarEstadoResultados`; `js/graficos/graficos.js`: `graficoFormatoMoneda`, `graficoVariacion`, `graficoColumnas`, `graficoSparkline`, `graficoRanking`. Guía visual: `docs/diseno/VISUALIZACION_BI.md`.
 - Consumidores por llamadas: sin consumidores directos detectados en otros `.js`.
 - HTML que lo carga: `index.html`.
 Las referencias anteriores se extraen del código; confirmar contexto de globals y listeners antes de modificar.
@@ -24,7 +24,7 @@ Aplicación al archivo: Mes seleccionado y snapshots de cuentas/movimientos/comp
 <!-- Fin fase 1 -->
 <!-- Inicio fase 2 -->
 ## Fase 2 — Procesamiento
-Aplicación al archivo: KPIs, variaciones, tendencias, ranking y actividad del mismo período.
+Aplicación al archivo: serie mensual pura de 6 meses (ventas, compras, resultado, liquidez, IVA), composición del resultado y variaciones contra el mes anterior.
 * *A. Objetivo (DDD):* [D] Precondiciones y postcondiciones finitas (Design by Contract). [A] Frontera de contexto blindada (Anti-Corruption Layer).
 * *B. Entrada (Zero-Trust):* [D] Ingesta fuertemente tipada. [A] Gatekeeping: Sanitización y validación estricta en la capa de transporte.
 * *C. Validación (Harness IAST):* [R] Verificación de invariantes de contrato. [D] Evaluación binaria determinista (Fail-Fast inmediato si es inválido).

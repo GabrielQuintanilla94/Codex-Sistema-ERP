@@ -349,6 +349,10 @@ La regresión consiste en repetir los mismos casos tras cambios; no sumarla como
 
 Se agregó una tercera etapa al QA: `tests/html/estatico.test.cjs` (17 casos) con `scripts/qa-html.cjs` y html-validate 11.16.4. El total del comando principal pasa a **101 casos** (34 + 17 + 50) y requiere Node.js 24.8 o posterior. El diagnóstico inicial fue 9,4/10 (4 defectos mayores) y, tras el refactor, 10/10, con capturas idénticas píxel a píxel. Detalle en `docs/QA_ESTATICO_HTML5.md`.
 
+### Actualización (11 de noviembre de 2026): visualización BI
+
+Se rediseñaron Inicio, Inventario y Activos fijos con `js/graficos/graficos.js` (nuevo) y la capa BI de `css/componentes.css` (`?v=3`). El QA principal pasa a **113 casos** (45 unitarias + 17 HTML5 + 51 integración). Guía y fuentes en `docs/diseno/VISUALIZACION_BI.md`.
+
 ## 12. Problemas encontrados en Windows y correcciones
 
 ### Git local antes del QA

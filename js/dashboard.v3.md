@@ -40,3 +40,6 @@ La construcción del resumen recorre colecciones linealmente: `O(C + M)` más el
 
 ## Invariante
 `dashboard.js` nunca crea, edita, elimina ni contabiliza partidas. Toda cifra contable proviene del motor y toda persistencia pertenece a `base_datos.js`.
+
+## Actualización noviembre 2026 — BI
+La carátula ahora usa `js/graficos/graficos.js`: indicadores con variación contra el mes anterior y sparkline de 6 meses, columnas de ventas y compras de 6 meses con tooltip y tabla, resultado del mes (costo de ventas, gastos de operación, margen bruto), ranking de costos y gastos e IVA con barras. El cálculo vive en funciones puras (`dashboardSerieMensual`, `dashboardComposicionResultado`); `dashboardBloquesPeriodo` se retiró. Guía: `docs/diseno/VISUALIZACION_BI.md`.

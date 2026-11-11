@@ -31,7 +31,6 @@ async function cargarResumenInventarioUI() {
     document.getElementById("inventario-total-skus").textContent = String(productosInventarioUI.length);
     document.getElementById("inventario-total-unidades").textContent = totalUnidades.toLocaleString("en-US", { maximumFractionDigits: 4 });
     document.getElementById("inventario-valor-total").textContent = dineroInventarioUI(inventarioADolares(valorTotalCentavos));
-    const maxValorCentavos = Math.max(1, ...productosInventarioUI.map(function(p) { return Number(p.valorInventarioCentavos || 0); }));
     document.getElementById("cuerpo-inventario").innerHTML = productosInventarioUI.map(function(producto) {
         const valor = Number(producto.valorInventarioCentavos || 0);
         const participacion = valorTotalCentavos > 0 ? valor / valorTotalCentavos * 100 : 0;
@@ -42,12 +41,7 @@ async function cargarResumenInventarioUI() {
             '<td class="numero"><strong>' + dineroInventarioUI(inventarioADolares(valor)) + '</strong></td>' +
             '<td><div class="participacion-cell"><div class="participacion-track"><i style="width:' + participacion.toFixed(2) + '%"></i></div><span>' + participacion.toFixed(1) + '%</span></div></td></tr>';
     }).join("");
-    const ranking = productosInventarioUI.slice().sort(function(a,b){ return Number(b.valorInventarioCentavos||0)-Number(a.valorInventarioCentavos||0); }).slice(0,6);
-    const rankingEl = document.getElementById("inventario-ranking");
-    if (rankingEl) rankingEl.innerHTML = ranking.length ? ranking.map(function(p){
-        const valor = Number(p.valorInventarioCentavos||0);
-        return '<div class="ranking-row"><div><span>' + escaparInventarioUI(p.descripcion) + '</span><strong>' + dineroInventarioUI(inventarioADolares(valor)) + '</strong></div><div class="ranking-track"><i style="width:' + (valor/maxValorCentavos*100).toFixed(2) + '%"></i></div></div>';
-    }).join("") : '<p class="dashboard-vacio">Sin inventario disponible.</p>';
+    graficoRanking(document.getElementById("inventario-ranking"), productosInventarioUI.map(p => ({ nombre: p.descripcion || p.sku, valor: inventarioADolares(Number(p.valorInventarioCentavos || 0)) })), { maximo: 6, vacio: "Sin inventario disponible." });
     document.getElementById("inventario-sin-registros").style.display = productosInventarioUI.length ? "none" : "block";
 }
 async function actualizarInventarioUI(propagarError) {

@@ -15,7 +15,7 @@ body{font-family:Arial,Helvetica,sans-serif;background:var(--erp-bg);color:var(-
 :is(.app-shell,dialog) :is(.panel-reporte,.panel-libro,.transaction-document){padding:20px}
 :is(.app-shell,dialog) .titulo-reporte h2{font-size:19px;color:var(--erp-text);line-height:1.3}
 :is(.app-shell,dialog) .titulo-reporte p{font-size:12px;color:var(--erp-muted);line-height:1.5}
-:is(.app-shell,dialog) :is(.kpi-strip,.asset-summary,.resumen-general,.resumen-impuestos){display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:12px;margin-bottom:16px}
+:is(.app-shell,dialog) :is(.kpi-strip,.asset-summary,.resumen-general,.resumen-impuestos){display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;margin-bottom:16px}
 :is(.app-shell,dialog) :is(.kpi-card,.resumen-general article){min-height:108px;padding:16px;border:1px solid var(--erp-border);border-radius:var(--ui-radius);background:var(--erp-panel);box-shadow:var(--ui-shadow)}
 :is(.app-shell,dialog) :is(.kpi-card,.resumen-general article) strong{font-size:23px;color:var(--erp-text);letter-spacing:-.4px}
 :is(.app-shell,dialog) :is(.kpi-card,.resumen-general article)>span{font-size:10px;color:var(--erp-muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
@@ -52,3 +52,72 @@ button:disabled{cursor:not-allowed;opacity:.55}
 
 @media(max-width:760px){body{padding-bottom:80px}}
 :is(.app-shell,dialog) .acciones-encabezado.acciones-con-margen{margin-top:12px}
+
+/* ===== Capa BI y visualización (docs/diseno/VISUALIZACION_BI.md). Paleta validada: --viz-1/--viz-2 sobre #fff ===== */
+:root{--viz-1:#2a78d6;--viz-2:#eb6834;--viz-pista:#e6eef9;--viz-guia:#e8ebf0;--viz-base:#c3c8d1;--viz-eje:#677387;--viz-sparkline:#a3adbb;--viz-bueno:#006300;--viz-malo:#b42323;--viz-neutral:#5b6778}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+:is(.app-shell,dialog) .dashboard-kicker{display:none}
+:is(.app-shell,dialog) :is(.tabla-reporte-contenedor,.contenedor-tabla-cuentas)>table{width:100%}
+:is(.app-shell,dialog) :is(.tabla-reporte,table) :is(th,td).numero{text-align:right;font-variant-numeric:tabular-nums}
+:is(.app-shell,dialog) :is(.kpi-card,.resumen-general article)>span{font-size:12px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--erp-muted)}
+:is(.app-shell,dialog) :is(.kpi-card,.resumen-general article) strong{display:block;margin:6px 0 4px;font-weight:700}
+:is(.app-shell,dialog) .kpi-card.kpi-primary{background:var(--erp-panel);border-color:var(--erp-border)}
+:is(.app-shell,dialog) .kpi-delta{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--viz-neutral)}
+:is(.app-shell,dialog) .kpi-delta.positive{color:var(--viz-bueno)}
+:is(.app-shell,dialog) .kpi-delta.negative{color:var(--viz-malo)}
+@media(min-width:761px){:is(.app-shell) .navegacion-lateral a{min-height:58px;margin:2px 7px;padding:8px 2px;gap:4px;flex-direction:column}:is(.app-shell) .navegacion-lateral a>span:last-child{display:block;font-size:10px;line-height:1.15;font-weight:600}}
+/* Inicio */
+:is(.app-shell) .bi-filtros{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 16px}
+:is(.app-shell) .bi-filtros .bi-periodo{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--erp-muted)}
+:is(.app-shell) .bi-filtros button[aria-label]{min-width:40px;font-size:16px;line-height:1;padding:8px 12px}
+:is(.app-shell) .bi-kpi{display:flex;flex-direction:column;justify-content:flex-start;min-height:136px}
+:is(.app-shell) .bi-sparkline{height:34px;margin-top:auto;padding-top:8px}
+.sparkline{display:block;overflow:visible}.sparkline-linea{fill:none;stroke:var(--viz-sparkline);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}.sparkline-punto{fill:var(--viz-1);stroke:#fff;stroke-width:2}
+:is(.app-shell) .bi-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:16px}
+:is(.app-shell) .bi-tendencia{grid-column:span 2}
+:is(.app-shell) .bi-tarjeta{display:flex;flex-direction:column;gap:4px;min-width:0}
+:is(.app-shell) .bi-tarjeta .titulo-reporte{margin-bottom:8px}
+:is(.app-shell) .headline-amount{font-size:28px;font-weight:700;letter-spacing:-.5px;color:var(--erp-text)}
+:is(.app-shell) .headline-amount.negativo{color:var(--viz-malo)}
+:is(.app-shell) .comparison-bars{display:grid;gap:10px;margin:10px 0}
+:is(.app-shell) .comparison-row{display:grid;grid-template-columns:minmax(84px,auto) minmax(40px,1fr) auto;align-items:center;gap:10px;font-size:12px;color:var(--erp-muted)}
+:is(.app-shell) .comparison-row strong{color:var(--erp-text);font-variant-numeric:tabular-nums;text-align:right}
+:is(.app-shell) :is(.comparison-track,.bi-medidor-pista){height:8px;border-radius:4px;background:#edf1f6;overflow:hidden}
+:is(.app-shell) :is(.comparison-track,.bi-medidor-pista) i{display:block;height:100%;border-radius:4px;background:var(--viz-1)}
+:is(.app-shell) .comparison-track i.serie-2{background:var(--viz-2)}
+:is(.app-shell) .bi-desglose{display:grid;gap:6px;margin:4px 0 12px;padding:10px 0 0;border-top:1px solid var(--erp-border);font-size:12px}
+:is(.app-shell) .bi-desglose div{display:flex;justify-content:space-between;gap:8px}:is(.app-shell) .bi-desglose dt{color:var(--erp-muted)}:is(.app-shell) .bi-desglose dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums}
+:is(.app-shell) .bi-medidor{display:grid;gap:6px;font-size:12px}
+:is(.app-shell) .bi-medidor>div:first-child{display:flex;justify-content:space-between;color:var(--erp-muted)}:is(.app-shell) .bi-medidor strong{color:var(--erp-text)}
+:is(.app-shell) .bi-medidor-pista{background:var(--viz-pista)}
+:is(.app-shell) .bi-resultado{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:2px 0 14px;padding:12px;border-radius:10px;background:#f5f7fb;font-size:12px;color:var(--erp-muted)}
+:is(.app-shell) .bi-resultado strong{font-size:18px;color:var(--erp-text)}
+:is(.app-shell) .bi-tarjeta .boton-ancho{margin-top:auto;text-align:center}
+@media(max-width:1100px){:is(.app-shell) .bi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}:is(.app-shell) .bi-tendencia{grid-column:1/-1}}
+@media(max-width:760px){:is(.app-shell) .bi-grid{grid-template-columns:1fr}:is(.app-shell) .bi-tendencia{grid-column:auto}}
+/* Componentes de gráfico (js/graficos/graficos.js) */
+.grafico{position:relative;min-width:0}
+.grafico-leyenda{display:flex;flex-wrap:wrap;gap:16px;margin:0 0 8px;font-size:12px;color:var(--erp-muted)}
+.grafico-leyenda span{display:inline-flex;align-items:center;gap:6px}
+.grafico-clave{display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--viz-1)}.grafico-clave.linea{width:12px;height:2px;border-radius:1px}.grafico-clave.serie-2{background:var(--viz-2)}
+.grafico-lienzo{position:relative}
+.grafico-svg{display:block;max-width:100%;overflow:visible}
+.grafico-guia{stroke:var(--viz-guia);stroke-width:1;shape-rendering:crispEdges}.grafico-base{stroke:var(--viz-base);stroke-width:1;shape-rendering:crispEdges}
+.grafico-eje{fill:var(--viz-eje);font-size:11px;font-variant-numeric:tabular-nums}
+.grafico-banda.activa .grafico-categoria{fill:var(--erp-text);font-weight:700}
+.grafico-marca.serie-1{fill:var(--viz-1)}.grafico-marca.serie-2{fill:var(--viz-2)}
+.grafico-banda.atenuada .grafico-marca{opacity:.45}.grafico-banda.resaltada .grafico-marca{opacity:1}
+.grafico-zona{fill:transparent;cursor:pointer;outline:none}
+.grafico-banda.resaltada .grafico-zona{fill:rgba(16,35,63,.045)}.grafico-zona:focus-visible{stroke:var(--erp-blue);stroke-width:2}
+.grafico-tooltip{position:absolute;top:0;z-index:3;display:grid;gap:4px;min-width:150px;padding:10px 12px;transform:translateX(-50%);background:#fff;border:1px solid var(--erp-border);border-radius:8px;box-shadow:0 6px 20px rgba(16,35,63,.12);font-size:12px;pointer-events:none}
+.grafico-tooltip[hidden]{display:none}.grafico-tooltip strong{color:var(--erp-muted);font-weight:600}
+.grafico-tooltip-fila{display:grid;grid-template-columns:12px auto 1fr;align-items:center;gap:6px}.grafico-tooltip-fila b{color:var(--erp-text);font-variant-numeric:tabular-nums}.grafico-tooltip-fila small{color:var(--erp-muted)}
+.grafico-tabla{margin-top:10px;font-size:12px}.grafico-tabla summary{width:max-content;cursor:pointer;color:var(--erp-blue);font-weight:600;padding:4px 0}.grafico-tabla .tabla-reporte-contenedor{margin-top:8px}
+.grafico-ranking{display:grid;gap:12px;margin:0;padding:0;list-style:none}
+.grafico-ranking-texto{display:grid;grid-template-columns:minmax(0,1fr) auto 46px;align-items:baseline;gap:8px;font-size:12px}
+.grafico-ranking-texto span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.grafico-ranking-texto strong{font-variant-numeric:tabular-nums}.grafico-ranking-texto small{color:var(--erp-muted);text-align:right;font-variant-numeric:tabular-nums}
+.grafico-ranking-pista{height:8px;margin-top:6px;border-radius:4px;background:var(--viz-pista);overflow:hidden}.grafico-ranking-pista i{display:block;height:100%;border-radius:4px;background:var(--viz-1)}
+.grafico-vacio{margin:0;padding:16px 0;color:var(--erp-muted);font-size:12px}
+@media print{.grafico-tabla{display:none}}
+/* Activos fijos: controles de corte en una fila cuando el panel ocupa todo el ancho */
+@media(min-width:761px) and (max-width:1180px){:is(.app-shell) .asset-controls{grid-template-columns:minmax(180px,1fr) auto auto auto;align-items:end}:is(.app-shell) .asset-controls .titulo-reporte{grid-column:1/-1}:is(.app-shell) .asset-controls .boton-ancho{width:auto}}

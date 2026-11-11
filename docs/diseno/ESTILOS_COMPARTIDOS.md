@@ -17,3 +17,6 @@ No agregar colores, bordes ni tipografías por página o ID. Agregar reglas visu
 ## Pruebas
 `tests/integracion.cjs` compara estilos calculados reales de encabezado, acción primaria, panel y tabla en las ocho vistas. También comprueba que no haya desbordamiento horizontal de la página a 375 px y que no haya etiquetas `<style>` locales. Las pruebas de CSV y edición verifican que la confirmación de los diálogos siga visible y operativa.
 Para guardar capturas al ejecutar la suite, definir opcionalmente `ERP_TEST_ARTIFACTS` como carpeta de salida; no se necesitan capturas para que las pruebas funcionen.
+
+## Capa BI (noviembre 2026)
+`componentes.css` (versión `?v=3`) agrega la sección «Capa BI y visualización»: tokens `--viz-*` validados para daltonismo, fuente del sistema, etiquetas de KPI en minúsculas, variaciones ▲/▼ con color semántico, tablas al 100 % y estilos de `js/graficos/graficos.js`. Detalle y fuentes: `VISUALIZACION_BI.md`.

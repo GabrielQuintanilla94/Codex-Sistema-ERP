@@ -15,7 +15,7 @@ let activosDepreciacionOmitidos = 0;
 
 /* FASE UI 01 — Formato/escape: sin cálculo contable. */
 function dineroDepreciacion(centavos) {
-    return "$" + (Number(centavos || 0) / 100).toFixed(2);
+    return new Intl.NumberFormat("es-SV", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(Number(centavos || 0) / 100);
 }
 function fechaLocalDepreciacion() {
     const ahora = new Date();

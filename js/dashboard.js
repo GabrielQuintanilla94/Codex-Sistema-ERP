@@ -1,12 +1,11 @@
 const DASHBOARD_PERIODO_STORAGE = "lc:dashboard:periodo";
+const DASHBOARD_MESES_TENDENCIA = 6;
 let dashboardPeriodoSeleccionado = "";
 let dashboardDatos = { cuentas: [], movimientos: [], compras: [], ventas: [] };
 let dashboardRefrescoEnCurso = null;
 let dashboardRefrescoPendiente = false;
-
-function dashboardDinero(valor) {
-    return new Intl.NumberFormat("es-SV", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(Number(valor || 0));
-}
+// Inicio fase 1: utilidades de período y formato
+function dashboardDinero(valor) { return graficoFormatoMoneda(valor); }
 function dashboardEscapar(valor) {
     return String(valor ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
@@ -24,52 +23,59 @@ function dashboardRangoPeriodo(periodo) {
     if (!dashboardPeriodoValido(periodo)) throw new Error("El período de análisis no es válido.");
     return { desde: periodo + "-01", hasta: periodo + "-" + String(dashboardDiasMes(periodo)).padStart(2, "0") };
 }
-function dashboardEtiquetaPeriodo(periodo) {
-    if (!dashboardPeriodoValido(periodo)) return "Período";
+function dashboardFormatearMes(periodo, opciones) {
     const [anio, mes] = periodo.split("-").map(Number);
-    const texto = new Intl.DateTimeFormat("es-SV", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(anio, mes - 1, 1)));
+    const texto = new Intl.DateTimeFormat("es-SV", { ...opciones, timeZone: "UTC" }).format(new Date(Date.UTC(anio, mes - 1, 1))).replace(".", "");
     return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
+function dashboardEtiquetaPeriodo(periodo) { return dashboardPeriodoValido(periodo) ? dashboardFormatearMes(periodo, { month: "long", year: "numeric" }) : "Período"; }
+function dashboardEtiquetaCorta(periodo, conAnio) { return dashboardFormatearMes(periodo, { month: "short" }) + (conAnio ? " " + periodo.slice(2, 4) : ""); }
 function dashboardEnRango(fecha, desde, hasta) { return String(fecha || "") >= desde && String(fecha || "") <= hasta; }
 function dashboardSumar(lista, campo) { return (lista || []).reduce(function(t, x) { return t + Number(x[campo] || 0); }, 0); }
-function dashboardPeriodoPrevio(periodo) {
+function dashboardDesplazarPeriodo(periodo, meses) {
     const [anio, mes] = periodo.split("-").map(Number);
-    const d = new Date(Date.UTC(anio, mes - 2, 1));
+    const d = new Date(Date.UTC(anio, mes - 1 + meses, 1));
     return d.getUTCFullYear() + "-" + String(d.getUTCMonth() + 1).padStart(2, "0");
 }
-function dashboardVariacion(actual, anterior) {
-    actual = Number(actual || 0); anterior = Number(anterior || 0);
-    if (anterior === 0) return actual === 0 ? { texto: "Sin cambio", clase: "neutral" } : { texto: "Nuevo período", clase: "positive" };
-    const pct = (actual - anterior) / Math.abs(anterior) * 100;
-    return { texto: (pct >= 0 ? "+" : "") + pct.toFixed(1) + "% vs. mes anterior", clase: pct >= 0 ? "positive" : "negative" };
+function dashboardPeriodoPrevio(periodo) { return dashboardDesplazarPeriodo(periodo, -1); }
+function dashboardPeriodoSiguiente(periodo) { return dashboardDesplazarPeriodo(periodo, 1); }
+function dashboardVariacion(actual, anterior, sentido = 1, referencia = "mes anterior") {
+    const v = graficoVariacion(actual, anterior, { sentido: sentido, referencia: referencia });
+    return { texto: v.texto, clase: { bueno: "positive", malo: "negative", neutral: "neutral" }[v.tono] };
 }
-function dashboardBloquesPeriodo(periodo, compras, ventas) {
-    const ultimo = dashboardDiasMes(periodo);
-    const rangos = [[1,5],[6,10],[11,15],[16,20],[21,25],[26,ultimo]];
-    return rangos.filter(r => r[0] <= ultimo).map(function(r) {
-        const di = periodo + "-" + String(r[0]).padStart(2,"0");
-        const df = periodo + "-" + String(r[1]).padStart(2,"0");
-        return {
-            etiqueta: String(r[0]).padStart(2,"0") + "–" + String(r[1]).padStart(2,"0"),
-            ventas: dashboardSumar(ventas.filter(x => dashboardEnRango(x.fecha, di, df)), "ventasGravadas"),
-            compras: dashboardSumar(compras.filter(x => dashboardEnRango(x.fecha, di, df)), "comprasGravadas")
-        };
+// Fin fase 1
+// Inicio fase 2: cálculo puro de la serie mensual (sin DOM)
+function dashboardDisponibilidad(datos, hasta) {
+    return generarBalanzaComprobacion(datos.cuentas, datos.movimientos, "", hasta).cuentas
+        .filter(c => c.clasificacion === "Activo" && /(banco|caja)/i.test(String(c.nombre || ""))).reduce((t, c) => t + Number(c.saldoNatural || 0), 0);
+}
+function dashboardSerieMensual(datos, periodo, meses = DASHBOARD_MESES_TENDENCIA) {
+    const periodos = Array.from({ length: meses }, (_, i) => dashboardDesplazarPeriodo(periodo, i - meses + 1));
+    return periodos.map(function(p, i) {
+        const r = dashboardRangoPeriodo(p), enRango = x => dashboardEnRango(x.fecha, r.desde, r.hasta);
+        const compras = datos.compras.filter(enRango), ventas = datos.ventas.filter(enRango);
+        const estado = generarEstadoResultados(datos.cuentas, datos.movimientos, r.desde, r.hasta);
+        return { periodo: p, etiqueta: dashboardEtiquetaCorta(p, i === 0 || p.endsWith("-01")), etiquetaLarga: dashboardEtiquetaPeriodo(p), compras: compras, ventas: ventas,
+            ventasBase: dashboardSumar(ventas, "ventasGravadas"), comprasBase: dashboardSumar(compras, "comprasGravadas"), estado: estado, disponibilidad: dashboardDisponibilidad(datos, r.hasta) };
     });
 }
-function dashboardRenderTendencia(bloques) {
-    const max = Math.max(1, ...bloques.flatMap(x => [x.ventas, x.compras]));
-    const nodo = document.getElementById("dashboard-tendencia");
-    nodo.innerHTML = bloques.map(function(b) {
-        return `<div class="trend-group"><div class="trend-bars"><i class="trend-bar ventas" style="height:${b.ventas ? Math.max(3,b.ventas/max*100) : 0}%" title="Ventas ${dashboardDinero(b.ventas)}"></i><i class="trend-bar compras" style="height:${b.compras ? Math.max(3,b.compras/max*100) : 0}%" title="Compras ${dashboardDinero(b.compras)}"></i></div><span>${b.etiqueta}</span></div>`;
-    }).join("");
+function dashboardComposicionResultado(estado) {
+    const costo = (estado.gastos || []).filter(c => String(c.codigo).startsWith("5")).reduce((t, c) => t + Number(c.saldoNatural || 0), 0);
+    const ingresos = Math.max(0, Number(estado.totalIngresos || 0)), gastos = Math.max(0, Number(estado.totalGastos || 0));
+    return { ingresos: ingresos, gastos: gastos, costo: costo, operacion: gastos - costo, margen: ingresos > 0 ? (ingresos - costo) / ingresos : null };
+}
+// Fin fase 2
+// Inicio fase 3: renderizado de cada bloque (solo cambia lo que recibió datos nuevos)
+function dashboardTexto(id, texto) { const nodo = document.getElementById(id); if (nodo && nodo.textContent !== texto) nodo.textContent = texto; }
+function dashboardRenderTendencia(serie, activo) {
+    return graficoColumnas(document.getElementById("dashboard-tendencia"), {
+        descripcion: "Ventas y compras gravadas de los últimos " + serie.length + " meses",
+        categorias: serie.map(x => x.etiqueta), etiquetasLargas: serie.map(x => x.etiquetaLarga), activo: activo,
+        series: [{ nombre: "Ventas", valores: serie.map(x => x.ventasBase) }, { nombre: "Compras", valores: serie.map(x => x.comprasBase) }]
+    });
 }
 function dashboardRenderRanking(gastos) {
-    const lista = (gastos || []).filter(x => Number(x.saldoNatural || 0) > 0).sort((a,b) => Number(b.saldoNatural || 0) - Number(a.saldoNatural || 0)).slice(0,5);
-    const max = Math.max(1, ...lista.map(x => Number(x.saldoNatural || 0)));
-    document.getElementById("dashboard-gastos-ranking").innerHTML = lista.length ? lista.map(function(x) {
-        const v = Number(x.saldoNatural || 0);
-        return `<div class="ranking-row"><div><span>${dashboardEscapar(x.nombre)}</span><strong>${dashboardDinero(v)}</strong></div><div class="ranking-track"><i style="width:${v/max*100}%"></i></div></div>`;
-    }).join("") : '<p class="dashboard-vacio">Sin gastos en el período.</p>';
+    graficoRanking(document.getElementById("dashboard-gastos-ranking"), (gastos || []).map(x => ({ nombre: x.nombre, valor: x.saldoNatural })), { vacio: "Sin costos ni gastos en el período." });
 }
 function dashboardRenderActividad(compras, ventas) {
     const ops = compras.map(c => ({fecha:c.fecha,tipo:"Compra",documento:c.documento,tercero:c.proveedor,base:c.comprasGravadas,iva:c.ivaCredito,total:c.total}))
@@ -80,13 +86,46 @@ function dashboardRenderActividad(compras, ventas) {
     }).join("");
     document.getElementById("dashboard-sin-actividad").style.display = ops.length ? "none" : "block";
 }
-function dashboardActualizarVariacion(id, actual, anterior) {
+function dashboardActualizarVariacion(id, actual, anterior, sentido = 1, referencia = "mes anterior") {
     const nodo = document.getElementById(id);
     if (!nodo) return;
-    const v = dashboardVariacion(actual, anterior);
+    const v = dashboardVariacion(actual, anterior, sentido, referencia);
     nodo.textContent = v.texto;
     nodo.className = "kpi-delta " + v.clase;
 }
+function dashboardRenderKPI(clave, valor, serie, campo, sentido, referencia) {
+    dashboardTexto("kpi-" + clave, dashboardDinero(valor));
+    dashboardActualizarVariacion("kpi-" + clave + "-delta", valor, campo(serie[serie.length - 2]), sentido, referencia);
+    graficoSparkline(document.getElementById("kpi-" + clave + "-tendencia"), serie.map(campo), "Últimos " + serie.length + " meses");
+}
+function dashboardRenderResultado(estado) {
+    const r = dashboardComposicionResultado(estado), escala = Math.max(r.ingresos, r.gastos, 1);
+    dashboardTexto("dashboard-ingresos", dashboardDinero(r.ingresos));
+    dashboardTexto("dashboard-gastos", dashboardDinero(r.gastos));
+    dashboardTexto("dashboard-costo-ventas", dashboardDinero(r.costo));
+    dashboardTexto("dashboard-gastos-operacion", dashboardDinero(r.operacion));
+    dashboardTexto("dashboard-resultado-neto", dashboardDinero(estado.resultadoNeto));
+    dashboardTexto("dashboard-margen", r.margen === null ? "—" : (r.margen * 100).toFixed(1) + " %");
+    document.getElementById("dashboard-resultado-neto").className = "headline-amount " + (estado.resultadoNeto < 0 ? "negativo" : "");
+    document.getElementById("dashboard-barra-ingresos").style.width = (r.ingresos / escala * 100).toFixed(2) + "%";
+    document.getElementById("dashboard-barra-gastos").style.width = (r.gastos / escala * 100).toFixed(2) + "%";
+    document.getElementById("dashboard-margen-barra").style.width = (Math.max(0, Math.min(1, r.margen || 0)) * 100).toFixed(2) + "%";
+}
+function dashboardRenderIVA(iva, periodo) {
+    const ivaNeto = iva.ivaPorPagar || iva.remanenteCreditoFiscal || 0, escala = Math.max(iva.debitoFiscal, iva.creditoFiscal, 1);
+    const estado = iva.ivaPorPagar > 0 ? "IVA por pagar" : iva.remanenteCreditoFiscal > 0 ? "Remanente de crédito" : "Sin diferencia";
+    dashboardTexto("kpi-iva", dashboardDinero(ivaNeto));
+    dashboardTexto("kpi-iva-estado", estado);
+    dashboardTexto("dashboard-iva-debito", dashboardDinero(iva.debitoFiscal));
+    dashboardTexto("dashboard-iva-credito", dashboardDinero(iva.creditoFiscal));
+    dashboardTexto("dashboard-iva-neto", dashboardDinero(ivaNeto));
+    dashboardTexto("dashboard-iva-etiqueta", estado);
+    dashboardTexto("dashboard-periodo-iva", dashboardEtiquetaPeriodo(periodo));
+    document.getElementById("dashboard-barra-debito").style.width = (iva.debitoFiscal / escala * 100).toFixed(2) + "%";
+    document.getElementById("dashboard-barra-credito").style.width = (iva.creditoFiscal / escala * 100).toFixed(2) + "%";
+}
+// Fin fase 3
+// Inicio fase 4: orquestación del período, datos y suscripción EDA
 function dashboardElegirPeriodoInicial(compras, ventas) {
     const guardado = localStorage.getItem(DASHBOARD_PERIODO_STORAGE);
     if (dashboardPeriodoValido(guardado)) return guardado;
@@ -108,56 +147,19 @@ function dashboardRenderPeriodo(periodo) {
     localStorage.setItem(DASHBOARD_PERIODO_STORAGE, periodo);
     const selector = document.getElementById("dashboard-periodo");
     if (selector && selector.value !== periodo) selector.value = periodo;
-    document.getElementById("dashboard-periodo-etiqueta").textContent = dashboardEtiquetaPeriodo(periodo);
-
-    const { cuentas, movimientos, compras, ventas } = dashboardDatos;
-    const rango = dashboardRangoPeriodo(periodo);
-    const periodoPrevio = dashboardPeriodoPrevio(periodo);
-    const rangoPrevio = dashboardRangoPeriodo(periodoPrevio);
-    const comprasPeriodo = compras.filter(c => dashboardEnRango(c.fecha, rango.desde, rango.hasta));
-    const ventasPeriodo = ventas.filter(v => dashboardEnRango(v.fecha, rango.desde, rango.hasta));
-    const comprasPrev = compras.filter(c => dashboardEnRango(c.fecha, rangoPrevio.desde, rangoPrevio.hasta));
-    const ventasPrev = ventas.filter(v => dashboardEnRango(v.fecha, rangoPrevio.desde, rangoPrevio.hasta));
-
-    const balanza = generarBalanzaComprobacion(cuentas, movimientos, "", rango.hasta);
-    const estado = generarEstadoResultados(cuentas, movimientos, rango.desde, rango.hasta);
-    const estadoPrev = generarEstadoResultados(cuentas, movimientos, rangoPrevio.desde, rangoPrevio.hasta);
-    const disponibilidad = balanza.cuentas.filter(c => c.clasificacion === "Activo" && /(banco|caja)/i.test(String(c.nombre || ""))).reduce((t,c) => t + Number(c.saldoNatural || 0), 0);
-    const iva = resumirIVA(comprasPeriodo, ventasPeriodo);
-    const ventasBase = dashboardSumar(ventasPeriodo, "ventasGravadas");
-    const comprasBase = dashboardSumar(comprasPeriodo, "comprasGravadas");
-    const ventasPrevBase = dashboardSumar(ventasPrev, "ventasGravadas");
-    const comprasPrevBase = dashboardSumar(comprasPrev, "comprasGravadas");
-
-    document.getElementById("kpi-disponibilidad").textContent = dashboardDinero(disponibilidad);
-    document.getElementById("kpi-ventas").textContent = dashboardDinero(ventasBase);
-    document.getElementById("kpi-compras").textContent = dashboardDinero(comprasBase);
-    document.getElementById("kpi-resultado").textContent = dashboardDinero(estado.resultadoNeto);
-    dashboardActualizarVariacion("kpi-ventas-delta", ventasBase, ventasPrevBase);
-    dashboardActualizarVariacion("kpi-compras-delta", comprasBase, comprasPrevBase);
-    dashboardActualizarVariacion("kpi-resultado-delta", estado.resultadoNeto, estadoPrev.resultadoNeto);
-
-    const ivaNeto = iva.ivaPorPagar || iva.remanenteCreditoFiscal || 0;
-    document.getElementById("kpi-iva").textContent = dashboardDinero(ivaNeto);
-    document.getElementById("kpi-iva-estado").textContent = iva.ivaPorPagar > 0 ? "IVA por pagar" : iva.remanenteCreditoFiscal > 0 ? "Remanente de crédito" : "Sin diferencia";
-    document.getElementById("dashboard-iva-debito").textContent = dashboardDinero(iva.debitoFiscal);
-    document.getElementById("dashboard-iva-credito").textContent = dashboardDinero(iva.creditoFiscal);
-    document.getElementById("dashboard-iva-neto").textContent = dashboardDinero(ivaNeto);
-    document.getElementById("dashboard-iva-etiqueta").textContent = iva.ivaPorPagar > 0 ? "IVA por pagar" : iva.remanenteCreditoFiscal > 0 ? "Remanente" : "Resultado";
-    document.getElementById("dashboard-periodo-iva").textContent = dashboardEtiquetaPeriodo(periodo);
-
-    const ingresos = Math.max(0, Number(estado.totalIngresos || 0));
-    const gastos = Math.max(0, Number(estado.totalGastos || 0));
-    const escala = Math.max(ingresos, gastos, 1);
-    document.getElementById("dashboard-ingresos").textContent = dashboardDinero(ingresos);
-    document.getElementById("dashboard-gastos").textContent = dashboardDinero(gastos);
-    document.getElementById("dashboard-resultado-neto").textContent = dashboardDinero(estado.resultadoNeto);
-    document.getElementById("dashboard-barra-ingresos").style.width = (ingresos / escala * 100).toFixed(2) + "%";
-    document.getElementById("dashboard-barra-gastos").style.width = (gastos / escala * 100).toFixed(2) + "%";
-
-    dashboardRenderTendencia(dashboardBloquesPeriodo(periodo, comprasPeriodo, ventasPeriodo));
-    dashboardRenderRanking(estado.gastos);
-    dashboardRenderActividad(comprasPeriodo, ventasPeriodo);
+    dashboardTexto("dashboard-periodo-etiqueta", dashboardEtiquetaPeriodo(periodo));
+    const serie = dashboardSerieMensual(dashboardDatos, periodo), actual = serie[serie.length - 1];
+    const referencia = dashboardEtiquetaCorta(dashboardPeriodoPrevio(periodo)).toLowerCase();
+    dashboardRenderKPI("ventas", actual.ventasBase, serie, x => x.ventasBase, 1, referencia);
+    dashboardRenderKPI("compras", actual.comprasBase, serie, x => x.comprasBase, 0, referencia);
+    dashboardRenderKPI("resultado", actual.estado.resultadoNeto, serie, x => x.estado.resultadoNeto, 1, referencia);
+    dashboardRenderKPI("disponibilidad", actual.disponibilidad, serie, x => x.disponibilidad, 1, referencia);
+    dashboardRenderIVA(resumirIVA(actual.compras, actual.ventas), periodo);
+    graficoSparkline(document.getElementById("kpi-iva-tendencia"), serie.map(x => { const i = resumirIVA(x.compras, x.ventas); return i.debitoFiscal - i.creditoFiscal; }), "IVA débito menos crédito, últimos " + serie.length + " meses");
+    dashboardRenderTendencia(serie, serie.length - 1);
+    dashboardRenderResultado(actual.estado);
+    dashboardRenderRanking(actual.estado.gastos);
+    dashboardRenderActividad(actual.compras, actual.ventas);
 }
 async function dashboardRefrescarDesdeBD() {
 dashboardRefrescoPendiente = true;
@@ -184,15 +186,14 @@ async function iniciarDashboard() {
     selector.addEventListener("change", function() {
         if (dashboardPeriodoValido(selector.value)) dashboardRenderPeriodo(selector.value);
     });
-    document.getElementById("dashboard-periodo-anterior").addEventListener("click", function() {
-        dashboardRenderPeriodo(dashboardPeriodoPrevio(dashboardPeriodoSeleccionado));
-    });
-    document.getElementById("dashboard-periodo-actual").addEventListener("click", function() {
-        dashboardRenderPeriodo(dashboardPeriodoActual());
-    });
+    const navegar = (id, destino) => document.getElementById(id).addEventListener("click", () => dashboardRenderPeriodo(destino()));
+    navegar("dashboard-periodo-anterior", () => dashboardPeriodoPrevio(dashboardPeriodoSeleccionado));
+    navegar("dashboard-periodo-siguiente", () => dashboardPeriodoSiguiente(dashboardPeriodoSeleccionado));
+    navegar("dashboard-periodo-actual", dashboardPeriodoActual);
     dashboardRenderPeriodo(dashboardPeriodoSeleccionado);
 }
 dashboardSuscribirEDA();
 document.addEventListener("DOMContentLoaded", function() {
     iniciarDashboard().catch(function(e) { console.error(e); });
 });
+// Fin fase 4

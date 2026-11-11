@@ -17,12 +17,12 @@ try{
 const [mayor,menor]=process.versions.node.split('.').map(Number);if(mayor<24||mayor===24&&menor<8)throw Error('Se requiere Node.js 24.8 o posterior.');
 r.sintaxis=await comprobarSintaxis();r.errores.push(...r.sintaxis.errores);
 console.log('Ejecutando pruebas unitarias…');
-const unidad=await ejecutarArchivo('tests/unit/contabilidad.test.cjs','Unitarias',{cobertura:true});r.etapas.push(unidad);r.errores.push(...evaluarEtapa(unidad,34));r.cobertura=evaluarCobertura(unidad.cobertura);r.errores.push(...r.cobertura.errores);
+const unidad=await ejecutarArchivo('tests/unit/contabilidad.test.cjs','Unitarias',{cobertura:true});r.etapas.push(unidad);r.errores.push(...evaluarEtapa(unidad,45));r.cobertura=evaluarCobertura(unidad.cobertura);r.errores.push(...r.cobertura.errores);
 console.log('Ejecutando prueba estática HTML5…');
 const html=await ejecutarArchivo('tests/html/estatico.test.cjs','HTML5 estático');r.etapas.push(html);r.errores.push(...evaluarEtapa(html,17));
 require('./qa-entorno.cjs').preparar();
 console.log('Ejecutando integración y flujos funcionales en navegador…');
-const integracion=await ejecutarArchivo('tests/integracion.cjs','Integración y funcionales');r.etapas.push(integracion);r.errores.push(...evaluarEtapa(integracion,50));
+const integracion=await ejecutarArchivo('tests/integracion.cjs','Integración y funcionales');r.etapas.push(integracion);r.errores.push(...evaluarEtapa(integracion,51));
 r.estado=r.errores.length?'fallida':'aprobada';
 }catch(error){r.errores.push(error.message);r.estado='bloqueada';}
 for(let i=0;i<r.etapas.length;i++){await fs.writeFile(path.join(historial,`etapa-${i+1}.log`),r.etapas[i].salida);delete r.etapas[i].salida;}

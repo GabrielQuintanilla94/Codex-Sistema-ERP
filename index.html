@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Centro de control contable</title>
-    <link rel="stylesheet" href="css/estilos.css?v=44"><link rel="stylesheet" href="css/componentes.css?v=2">
+    <link rel="stylesheet" href="css/estilos.css?v=44"><link rel="stylesheet" href="css/componentes.css?v=3">
 </head>
 <body>
 <div class="app-shell">
@@ -17,55 +17,63 @@
             <div>
                 <span class="etiqueta-version">CENTRO DE CONTROL</span>
                 <h1>Resumen del negocio</h1>
-                <p>Liquidez, operación comercial, IVA y desempeño contable por período.</p><small class="dashboard-period-title">Analizando: <strong id="dashboard-periodo-etiqueta">Período</strong></small>
+                <p>Ventas, compras, resultado, liquidez e IVA de <strong id="dashboard-periodo-etiqueta">Período</strong>, comparados con el mes anterior.</p>
             </div>
-            <div class="dashboard-header-actions dashboard-period-controls">
-                <label class="dashboard-period-picker">Período de análisis<input id="dashboard-periodo" type="month"></label>
-                <button id="dashboard-periodo-anterior" class="boton-secundario-azul" type="button">← Mes anterior</button>
-                <button id="dashboard-periodo-actual" class="boton-secundario-azul" type="button">Mes actual</button>
-                <a class="boton-primario enlace-boton" href="operaciones.html">Registrar operación</a>
-            </div>
+            <div class="dashboard-header-actions"><a class="boton-primario enlace-boton" href="operaciones.html">Registrar operación</a></div>
         </section>
 
-        <section class="kpi-strip dashboard-kpis" aria-label="Indicadores principales">
-            <article class="kpi-card kpi-primary"><span>Disponibilidad</span><strong id="kpi-disponibilidad">$0.00</strong><small>Caja + bancos</small></article>
-            <article class="kpi-card"><span>Ventas gravadas</span><strong id="kpi-ventas">$0.00</strong><small id="kpi-ventas-delta" class="kpi-delta neutral">Sin cambio</small></article>
-            <article class="kpi-card"><span>Compras gravadas</span><strong id="kpi-compras">$0.00</strong><small id="kpi-compras-delta" class="kpi-delta neutral">Sin cambio</small></article>
-            <article class="kpi-card"><span>Resultado neto</span><strong id="kpi-resultado">$0.00</strong><small id="kpi-resultado-delta" class="kpi-delta neutral">Sin cambio</small></article>
-            <article class="kpi-card"><span>IVA del mes</span><strong id="kpi-iva">$0.00</strong><small id="kpi-iva-estado">Sin diferencia</small></article>
+        <div class="bi-filtros" role="group" aria-label="Período de análisis">
+            <button id="dashboard-periodo-anterior" class="boton-secundario-azul" type="button" aria-label="Mes anterior">‹</button>
+            <label class="bi-periodo">Período<input id="dashboard-periodo" type="month"></label>
+            <button id="dashboard-periodo-siguiente" class="boton-secundario-azul" type="button" aria-label="Mes siguiente">›</button>
+            <button id="dashboard-periodo-actual" class="boton-secundario-azul" type="button">Mes actual</button>
+        </div>
+
+        <section class="kpi-strip bi-kpis" aria-label="Indicadores principales">
+            <article class="kpi-card bi-kpi"><span>Ventas gravadas</span><strong id="kpi-ventas">$0.00</strong><small id="kpi-ventas-delta" class="kpi-delta neutral">Sin cambio</small><div id="kpi-ventas-tendencia" class="bi-sparkline"></div></article>
+            <article class="kpi-card bi-kpi"><span>Compras gravadas</span><strong id="kpi-compras">$0.00</strong><small id="kpi-compras-delta" class="kpi-delta neutral">Sin cambio</small><div id="kpi-compras-tendencia" class="bi-sparkline"></div></article>
+            <article class="kpi-card bi-kpi"><span>Resultado neto</span><strong id="kpi-resultado">$0.00</strong><small id="kpi-resultado-delta" class="kpi-delta neutral">Sin cambio</small><div id="kpi-resultado-tendencia" class="bi-sparkline"></div></article>
+            <article class="kpi-card bi-kpi"><span>Caja y bancos</span><strong id="kpi-disponibilidad">$0.00</strong><small id="kpi-disponibilidad-delta" class="kpi-delta neutral">Sin cambio</small><div id="kpi-disponibilidad-tendencia" class="bi-sparkline"></div></article>
+            <article class="kpi-card bi-kpi"><span>IVA del mes</span><strong id="kpi-iva">$0.00</strong><small id="kpi-iva-estado" class="kpi-delta neutral">Sin diferencia</small><div id="kpi-iva-tendencia" class="bi-sparkline"></div></article>
         </section>
 
-        <section class="dashboard-layout">
-            <article class="panel-reporte dashboard-main-card">
-                <div class="titulo-reporte">
-                    <div><span class="dashboard-kicker">TENDENCIA OPERATIVA</span><h2>Ventas y compras</h2><p>Comparación de base gravada dentro del período seleccionado.</p></div>
-                    <a href="reportes.html" class="link-contextual">Ver reportes →</a>
-                </div>
-                <div id="dashboard-tendencia" class="trend-chart" role="img" aria-label="Tendencia de ventas y compras"></div>
-                <div class="chart-legend"><span><i class="legend-dot ventas"></i>Ventas</span><span><i class="legend-dot compras"></i>Compras</span></div>
+        <section class="bi-grid">
+            <article class="panel-reporte bi-tarjeta bi-tendencia">
+                <div class="titulo-reporte"><div><h2>Ventas y compras</h2><p>Base gravada de los últimos 6 meses; el mes analizado aparece resaltado.</p></div><a href="reportes.html" class="link-contextual">Ver reportes →</a></div>
+                <div id="dashboard-tendencia" class="grafico"></div>
             </article>
 
-            <aside class="panel-reporte dashboard-side-card" aria-label="IVA del período">
-                <div class="titulo-reporte"><div><span class="dashboard-kicker">CIERRE FISCAL</span><h2>IVA del período</h2><p id="dashboard-periodo-iva">Período actual</p></div></div>
-                <div class="fiscal-mini-grid">
-                    <div><span>Débito fiscal</span><strong id="dashboard-iva-debito">$0.00</strong></div>
-                    <div><span>Crédito fiscal</span><strong id="dashboard-iva-credito">$0.00</strong></div>
-                    <div class="fiscal-result"><span id="dashboard-iva-etiqueta">Resultado</span><strong id="dashboard-iva-neto">$0.00</strong></div>
+            <article class="panel-reporte bi-tarjeta">
+                <div class="titulo-reporte"><div><h2>Resultado del mes</h2><p>Estado de resultados resumido.</p></div></div>
+                <strong id="dashboard-resultado-neto" class="headline-amount">$0.00</strong>
+                <div class="comparison-bars">
+                    <div class="comparison-row"><span>Ingresos</span><div class="comparison-track"><i id="dashboard-barra-ingresos" class="serie-1"></i></div><strong id="dashboard-ingresos">$0.00</strong></div>
+                    <div class="comparison-row"><span>Costos y gastos</span><div class="comparison-track"><i id="dashboard-barra-gastos" class="serie-2"></i></div><strong id="dashboard-gastos">$0.00</strong></div>
                 </div>
+                <dl class="bi-desglose">
+                    <div><dt>Costo de ventas</dt><dd id="dashboard-costo-ventas">$0.00</dd></div>
+                    <div><dt>Gastos de operación</dt><dd id="dashboard-gastos-operacion">$0.00</dd></div>
+                </dl>
+                <div class="bi-medidor"><div><span>Margen bruto</span><strong id="dashboard-margen">—</strong></div><div class="bi-medidor-pista"><i id="dashboard-margen-barra"></i></div></div>
+            </article>
+
+            <article class="panel-reporte bi-tarjeta">
+                <div class="titulo-reporte"><div><h2>Costos y gastos principales</h2><p>Las 5 cuentas con mayor saldo en el mes.</p></div></div>
+                <div id="dashboard-gastos-ranking"></div>
+            </article>
+
+            <aside class="panel-reporte bi-tarjeta" aria-label="IVA del período">
+                <div class="titulo-reporte"><div><h2>IVA del período</h2><p id="dashboard-periodo-iva">Período actual</p></div></div>
+                <div class="comparison-bars">
+                    <div class="comparison-row"><span>Débito fiscal</span><div class="comparison-track"><i id="dashboard-barra-debito" class="serie-1"></i></div><strong id="dashboard-iva-debito">$0.00</strong></div>
+                    <div class="comparison-row"><span>Crédito fiscal</span><div class="comparison-track"><i id="dashboard-barra-credito" class="serie-2"></i></div><strong id="dashboard-iva-credito">$0.00</strong></div>
+                </div>
+                <div class="bi-resultado"><span id="dashboard-iva-etiqueta">Sin diferencia</span><strong id="dashboard-iva-neto">$0.00</strong></div>
                 <a class="boton-secundario-azul enlace-boton boton-ancho" href="operaciones.html#impuestos">Abrir IVA / F07</a>
             </aside>
 
-            <article class="panel-reporte dashboard-main-card">
-                <div class="titulo-reporte"><div><span class="dashboard-kicker">RESULTADO CONTABLE</span><h2>Ingresos y gastos</h2><p>Composición del resultado del período seleccionado.</p></div><strong id="dashboard-resultado-neto" class="headline-amount">$0.00</strong></div>
-                <div class="comparison-bars">
-                    <div class="comparison-row"><span>Ingresos</span><div class="comparison-track"><i id="dashboard-barra-ingresos" class="bar-income"></i></div><strong id="dashboard-ingresos">$0.00</strong></div>
-                    <div class="comparison-row"><span>Gastos</span><div class="comparison-track"><i id="dashboard-barra-gastos" class="bar-expense"></i></div><strong id="dashboard-gastos">$0.00</strong></div>
-                </div>
-                <div id="dashboard-gastos-ranking" class="ranking-bars"></div>
-            </article>
-
-            <aside class="panel-reporte dashboard-side-card quick-actions-card" aria-label="Accesos rápidos">
-                <div class="titulo-reporte"><div><span class="dashboard-kicker">ACCESOS RÁPIDOS</span><h2>Trabajar ahora</h2></div></div>
+            <aside class="panel-reporte bi-tarjeta quick-actions-card" aria-label="Accesos rápidos">
+                <div class="titulo-reporte"><div><h2>Accesos rápidos</h2><p>Registrar sin salir del flujo.</p></div></div>
                 <div class="quick-actions">
                     <a href="operaciones.html#ventas"><span>↑</span><div><strong>Registrar venta</strong><small>Ingreso + IVA + inventario</small></div></a>
                     <a href="operaciones.html#compras"><span>↓</span><div><strong>Registrar compra</strong><small>Inventario + IVA crédito</small></div></a>
@@ -76,9 +84,9 @@
         </section>
 
         <section class="panel-reporte activity-panel">
-            <div class="titulo-reporte"><div><span class="dashboard-kicker">ACTIVIDAD RECIENTE</span><h2>Últimas operaciones</h2><p>Compras y ventas registradas, ordenadas por fecha.</p></div><a href="operaciones.html" class="link-contextual">Ver operaciones →</a></div>
-            <div class="tabla-reporte-contenedor"><table class="tabla-reporte compact-table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Documento</th><th>Tercero</th><th>Base</th><th>IVA</th><th>Total</th></tr></thead><tbody id="dashboard-actividad"></tbody></table></div>
-            <p id="dashboard-sin-actividad" class="sin-resultados">Todavía no hay operaciones comerciales registradas.</p>
+            <div class="titulo-reporte"><div><h2>Operaciones del mes</h2><p>Compras y ventas del período, de la más reciente a la más antigua.</p></div><a href="operaciones.html" class="link-contextual">Ver operaciones →</a></div>
+            <div class="tabla-reporte-contenedor"><table class="tabla-reporte compact-table"><thead><tr><th scope="col">Fecha</th><th scope="col">Tipo</th><th scope="col">Documento</th><th scope="col">Tercero</th><th scope="col" class="numero">Base</th><th scope="col" class="numero">IVA</th><th scope="col" class="numero">Total</th></tr></thead><tbody id="dashboard-actividad"></tbody></table></div>
+            <p id="dashboard-sin-actividad" class="sin-resultados">No hay compras ni ventas en este período.</p>
         </section>
     </main>
 </div>
@@ -87,7 +95,8 @@
 <script src="js/eventos/bus_eventos.js?v=5"></script><script src="js/eventos/routing_eventos.js?v=3"></script>
 <script src="js/motor_contable.js?v=13"></script>
 <script src="js/impuestos/iva.js?v=3"></script>
-<script src="js/dashboard.js?v=50"></script>
-<script src="js/nav.js?v=5"></script>
+<script src="js/graficos/graficos.js?v=1"></script>
+<script src="js/dashboard.js?v=52"></script>
+<script src="js/nav.js?v=6"></script>
 </body>
 </html>

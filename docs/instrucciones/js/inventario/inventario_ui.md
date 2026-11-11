@@ -61,3 +61,6 @@ Aplicación al archivo: VerificarTotalesInventarioUI y coherencia de existencias
 ## Límites y entrega
 Aplicar A–H al alcance real: cálculos puros separados de DOM, BD y telemetría. Los criterios no certifican hashing perfecto, IAST, Circuit Breaker ni trazabilidad distribuida implementados. `Map` no garantiza O(1) en peor caso; recorrer n entradas exige Ω(n). No introducir Epoll en navegador ni reintentos de escrituras no idempotentes.
 Entregar cambios solo de este alcance, alineados a la izquierda, compactos y legibles, sin renombrar ni duplicar lógica. Delimitar bloques intervenidos con `// Inicio fase N` y `// Fin fase N`, conservando la numeración real del `.js`. Validar con `node --check js/inventario/inventario_ui.js` y probar verificarTotalesInventarioUI y coherencia de existencias. Informar resultados ejecutados y pendientes. EDA de negocio solo después de releer y comprobar persistencia; un módulo sin publicación no debe incorporarla por esta plantilla.
+
+## Actualización noviembre 2026
+El ranking «Mayor valor inmovilizado» se dibuja con `graficoRanking` de `js/graficos/graficos.js` (cargado antes en `inventario.html`), que agrega la participación % y escribe los nombres con `textContent`. Se retiró la variable sin uso `maxValorCentavos`.
