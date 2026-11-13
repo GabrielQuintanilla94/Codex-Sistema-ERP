@@ -1730,3 +1730,6 @@ El rediseño visual reutiliza el motor contable existente y no duplica reglas de
 ## Afinación octubre 2026
 - Se retiró código de dashboard ajeno a la responsabilidad del módulo.
 - El módulo queda dedicado a captura/edición de partidas y actualización de sus proyecciones.
+
+## Actualización noviembre 2026 — desacoplamiento
+Este archivo quedó como orquestador del proceso: estado, 5 fases, persistencia con `verificarORevertir` y publicación EDA posterior a la verificación. Interfaz, contrato, validador y telemetría se movieron a módulos propios sin cambiar nombres públicos. Ver `docs/procesos/ARQUITECTURA_PROCESOS.md`.
