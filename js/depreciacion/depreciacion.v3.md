@@ -351,3 +351,6 @@ Total asintótico sigue siendo `O(M)`, porque tres recorridos lineales no cambia
 
 ## ACTUALIZACIÓN — ALGORITMIA DE 5 FASES
 Sincronización: fase1EntradaSincronizacionDepreciacion → fase2ValidarSincronizacionDepreciacion → fase3ProcesarSincronizacionDepreciacion → fase4PersistirSincronizacionDepreciacion → fase5VerificarSincronizacionDepreciacion. El evento se emite tras verificación consolidada.
+
+## Actualización noviembre 2026 — desacoplamiento
+Este archivo quedó como orquestador de la sincronización; contrato, validador y cálculo se movieron a módulos propios sin cambiar nombres. La telemetría usa el registro compartido y ya no se escribe desde el cálculo. Ver `docs/procesos/ARQUITECTURA_PROCESOS.md`.

@@ -361,6 +361,10 @@ Se rediseñaron Inicio, Inventario y Activos fijos con `js/graficos/graficos.js`
 
 Se agregaron `compras_contrato.js`, `compras_validador.js`, `ventas_contrato.js` y `ventas_validador.js`; `compras.js` y `ventas.js` quedaron como orquestadores con telemetría (`trazarProcesoTelemetria`). QA principal: **136 casos** (68 + 17 + 51). Pendientes del patrón: Depreciación e Inventario.
 
+### Actualización (13 de noviembre de 2026): Depreciación e Inventario desacoplados
+
+Nuevos: `depreciacion_contrato.js`, `depreciacion_validador.js`, `depreciacion_calculo.js`, `inventario_contrato.js`, `inventario_validador.js`. `telemetria.js` se carga una vez tras `base_datos.js` en 6 páginas. El patrón quedó aplicado a los cinco procesos. QA principal: **144 casos** (76 + 17 + 51).
+
 ## 12. Problemas encontrados en Windows y correcciones
 
 ### Git local antes del QA

@@ -17,7 +17,7 @@ try{
 const [mayor,menor]=process.versions.node.split('.').map(Number);if(mayor<24||mayor===24&&menor<8)throw Error('Se requiere Node.js 24.8 o posterior.');
 r.sintaxis=await comprobarSintaxis();r.errores.push(...r.sintaxis.errores);
 console.log('Ejecutando pruebas unitarias…');
-const unidad=await ejecutarArchivo('tests/unit/contabilidad.test.cjs','Unitarias',{cobertura:true});r.etapas.push(unidad);r.errores.push(...evaluarEtapa(unidad,68));r.cobertura=evaluarCobertura(unidad.cobertura);r.errores.push(...r.cobertura.errores);
+const unidad=await ejecutarArchivo('tests/unit/contabilidad.test.cjs','Unitarias',{cobertura:true});r.etapas.push(unidad);r.errores.push(...evaluarEtapa(unidad,76));r.cobertura=evaluarCobertura(unidad.cobertura);r.errores.push(...r.cobertura.errores);
 console.log('Ejecutando prueba estática HTML5…');
 const html=await ejecutarArchivo('tests/html/estatico.test.cjs','HTML5 estático');r.etapas.push(html);r.errores.push(...evaluarEtapa(html,17));
 require('./qa-entorno.cjs').preparar();

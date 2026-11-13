@@ -72,7 +72,7 @@ Los anexos DTE 01/03 usan punto y coma; consumidor final se agrupa por día e in
 `js/eventos/routing_eventos.js` centraliza publicadores y consumidores. Consultá `obtenerEstadoRoutingEventos()` en la consola para ver rutas y conexiones de la página actual. Mapa, límites y conciliación reproducible en `docs/EDA.md`; instrucciones del archivo en `docs/instrucciones/js/eventos/routing_eventos.md`.
 
 ## Procesos desacoplados
-Libro Diario, Compras y Ventas se dividen en orquestador, contrato, validador e interfaz (el Libro Diario además usa `movimientos.js` para el estado), con telemetría compartida en `js/eventos/telemetria.js` y el router EDA existente. Patrón, principios y cómo replicarlo: [Arquitectura de procesos](docs/procesos/ARQUITECTURA_PROCESOS.md).
+Los cinco procesos (Libro Diario, Compras, Ventas, Depreciación e Inventario) se dividen en orquestador, contrato, validador e interfaz (Depreciación agrega un módulo de cálculo; el Libro Diario usa `movimientos.js` para el estado), con telemetría compartida en `js/eventos/telemetria.js` y el router EDA existente. Patrón, principios y cómo replicarlo: [Arquitectura de procesos](docs/procesos/ARQUITECTURA_PROCESOS.md).
 
 ## Visualización BI
 Inicio muestra indicadores con variación contra el mes anterior y mini tendencia, ventas y compras de los últimos 6 meses con tooltip y tabla, resultado del mes con margen bruto, ranking de costos y gastos e IVA. Los gráficos salen de `js/graficos/graficos.js` (SVG sin dependencias, render atómico). Principios, paleta validada y fuentes: [Visualización BI](docs/diseno/VISUALIZACION_BI.md).

@@ -1,73 +1,8 @@
-const METODO_VALUACION_INVENTARIO = "PROMEDIO_PONDERADO_PERPETUO";
-const CUENTA_INVENTARIO_MATERIALES = "1104";
-const CUENTA_COSTO_MATERIALES = "5001";
-
-function inventarioACentavos(valor) {
-    const numero = Number(valor);
-    if (!Number.isFinite(numero)) throw new Error("El importe de inventario no es válido.");
-    return Math.round(numero * 100);
-}
-
-function inventarioADolares(centavos) {
-    return Number(centavos || 0) / 100;
-}
-
-function validarCantidadInventario(cantidad) {
-    const numero = Number(cantidad);
-    if (!Number.isFinite(numero) || numero <= 0) throw new Error("La cantidad debe ser mayor que cero.");
-    return numero;
-}
-
-function normalizarSKU(sku) {
-    const valor = String(sku || "").trim();
-    if (!valor) throw new Error("El SKU es obligatorio.");
-    return valor;
-}
-
-function normalizarTipoInventario(tipo) {
-    const valor = String(tipo || "").trim().toLowerCase();
-    if (!valor) return "";
-    if (valor === "entrada") return "Entrada";
-    if (valor === "salida") return "Salida";
-    throw new Error("El tipo de inventario debe ser Entrada o Salida.");
-}
-
-function crearEstadoInventarioVacio(sku, descripcion, marcaTiempo) {
-    return {
-        sku: normalizarSKU(sku),
-        descripcion: String(descripcion || "").trim(),
-        cantidad: 0,
-        valorInventarioCentavos: 0,
-        costoPromedioCentavos: 0,
-        metodoValuacion: METODO_VALUACION_INVENTARIO,
-        actualizadoEn: String(marcaTiempo || "")
-    };
-}
-
-function clonarEstadoInventario(estado) {
-    return estado ? { ...estado } : null;
-}
-function verificarEstadoInventarioTresNiveles(estado, contexto) {
-    const cantidad = Number(estado?.cantidad || 0);
-    const valor = Number(estado?.valorInventarioCentavos || 0);
-    const promedio = Number(estado?.costoPromedioCentavos || 0);
-    const nivel1 = Number.isFinite(cantidad) && cantidad >= 0 && Number.isInteger(valor) && valor >= 0 && Number.isInteger(promedio) && promedio >= 0;
-    const nivel2 = cantidad === 0 ? valor === 0 && promedio === 0 : valor > 0;
-    const tolerancia = Math.max(1, Math.ceil(Math.abs(cantidad)));
-    const nivel3 = cantidad === 0 || Math.abs(Math.round(cantidad * promedio) - valor) <= tolerancia;
-    const verificacion = {
-        valido: nivel1 && nivel2 && nivel3,
-        contexto: String(contexto || "Inventario"),
-        niveles: [
-            { nivel: 1, nombre: "Límites y enteros monetarios", valido: nivel1 },
-            { nivel: 2, nombre: "Existencia coherente con valor", valido: nivel2 },
-            { nivel: 3, nombre: "Promedio aproxima valor total", valido: nivel3 }
-        ]
-    };
-    if (!verificacion.valido) throw new Error("El estado de inventario no superó la triple verificación: " + verificacion.contexto + ".");
-    return verificacion;
-}
-
+// Inicio fase 0: motor de costeo y orquestador de la proyección de inventario (docs/procesos/ARQUITECTURA_PROCESOS.md)
+// El inventario no publica eventos: se recalcula desde el Libro Diario. Depende de inventario_contrato.js, inventario_validador.js,
+// base_datos.js y telemetria.js (solo en las funciones que leen o escriben IndexedDB).
+// Fin fase 0
+// Inicio fase 1: costeo por promedio ponderado perpetuo (puro)
 function calcularEntradaPorValor(estadoActual, datos) {
     const sku = normalizarSKU(datos.sku);
     const cantidadEntrada = validarCantidadInventario(datos.cantidad);
@@ -254,7 +189,8 @@ function prepararMovimientoConInventario(movimientoEntrada, movimientosPrevios) 
     }
     return movimiento;
 }
-
+// Fin fase 1
+// Inicio fase 2: proyección persistida (reconstrucción y resumen)
 async function reconstruirInventarioDesdeMovimientos(movimientosEntrada) {
     const simulacion = construirMapaInventarioDesdeMovimientos(movimientosEntrada || []);
     const existentes = await obtenerInventariosBD();
@@ -264,6 +200,7 @@ async function reconstruirInventarioDesdeMovimientos(movimientosEntrada) {
     for (const estado of simulacion.estados.values()) {
         await guardarInventarioBD(estado);
     }
+    registrarTelemetria("inventario", "Reconstrucción", simulacion.estados.size + " SKU recalculados", false);
     return {
         productos: Array.from(simulacion.estados.values()),
         historial: simulacion.historial
@@ -282,7 +219,7 @@ async function obtenerResumenInventario() {
         valorTotal: inventarioADolares(valorTotalCentavos)
     };
 }
-
+// Fin fase 2
 // Inicio fase 4 — Inventario y partidas comparten la transacción del orquestador.
 function cambiosInventarioDesdeMovimientos(movimientosEntrada) {
 const estados = construirMapaInventarioDesdeMovimientos(movimientosEntrada).estados;
@@ -293,7 +230,11 @@ return [{ almacen: ALMACEN_INVENTARIO, accion: "limpiar" }].concat(Array.from(es
 async function verificarInventarioDesdeMovimientos(movimientosEntrada) {
 const esperados = construirMapaInventarioDesdeMovimientos(movimientosEntrada).estados;
 const actuales = await obtenerInventariosBD();
-if (actuales.length !== esperados.size || !actuales.every(function(actual) { return estadoPersistidoCoincide(esperados.get(actual.sku), actual); })) throw new Error("El inventario persistido no coincide con los movimientos esperados.");
+if (actuales.length !== esperados.size || !actuales.every(function(actual) { return estadoPersistidoCoincide(esperados.get(actual.sku), actual); })) {
+registrarTelemetria("inventario", "5. Verificación", "El inventario persistido no coincide con los movimientos esperados.", true);
+throw new Error("El inventario persistido no coincide con los movimientos esperados.");
+}
+registrarTelemetria("inventario", "5. Verificación", esperados.size + " SKU verificados", false);
 return true;
 }
 // Fin fase 5

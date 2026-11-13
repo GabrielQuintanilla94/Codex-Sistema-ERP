@@ -100,3 +100,6 @@ Debe(5001) = Haber(1104) para el costo generado
 ## Afinación octubre 2026
 - Cada entrada/salida verifica límites, relación existencia/valor y coherencia con costo promedio.
 - La salida verifica adicionalmente costo reconocido y valor remanente.
+
+## Actualización noviembre 2026 — desacoplamiento
+Este archivo quedó como motor de costeo y proyección; contrato y validador se movieron a `inventario_contrato.js` e `inventario_validador.js`. Reconstrucción y verificación registran telemetría (proceso `inventario`). Ver `docs/procesos/ARQUITECTURA_PROCESOS.md`.

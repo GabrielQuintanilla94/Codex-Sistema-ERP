@@ -1,6 +1,6 @@
 # Arquitectura de procesos desacoplados
 
-Patrón para separar cada proceso de negocio en módulos con una sola responsabilidad. **Aplicado a: Libro Diario, Compras y Ventas.** Depreciación e Inventario seguirán el mismo patrón.
+Patrón para separar cada proceso de negocio en módulos con una sola responsabilidad. **Aplicado a los cinco procesos: Libro Diario, Compras, Ventas, Depreciación e Inventario.**
 
 ## 1. Los cinco módulos de un proceso
 
@@ -103,7 +103,40 @@ Registrar es una orden directa; «partida registrada» es el evento. En el Libro
   - Se agregaron 7 pruebas unitarias nuevas.
   - Se aplicaron 4 mutaciones a los validadores y las 4 fueron detectadas. Una de ellas, la del nivel 2 de la verificación de ventas, al principio sobrevivió porque el nivel 3 la cubría, y se agregó un caso específico para ella.
 
-## 8. Cómo replicarlo en otro proceso
+## 8. Depreciación e Inventario (tercera aplicación)
+
+| Módulo | Depreciación | Inventario |
+|---|---|---|
+| Orquestador | `depreciacion.js`: 5 fases de sincronización, persistencia con reversión, evento `DEPRECIACION_SINCRONIZADA` y servicio `prepararMovimientoConDepreciacion` para el Libro Diario | `inventario_costos.js`: motor de costeo y proyección persistida (reconstrucción, cambios y verificación) |
+| Contrato | `depreciacion_contrato.js`: configuración PPE, fechas, metadatos del activo e identificación de partidas automáticas | `inventario_contrato.js`: método, cuentas, conversiones y forma del estado por SKU |
+| Validador | `depreciacion_validador.js`: adquisición, datos para calcular, triple verificación, cuentas, idempotencia y persistencia | `inventario_validador.js`: cantidades y triple verificación del estado |
+| Cálculo | `depreciacion_calculo.js`: calendario de línea recta, cálculo a fecha, partida consolidada y planificación | (en el motor de costeo) |
+| Interfaz | `depreciacion_ui.js` (sin cambios) | `inventario_ui.js` (sin cambios) |
+
+**Por qué Depreciación tiene un módulo de cálculo:** es el proceso con más matemática (calendario, prorrateo del primer mes, remanente, consolidación por período). Separarlo del contrato y del validador deja a cada uno una sola razón para cambiar (SRP).
+
+**Por qué Inventario no tiene un orquestador aparte:** el inventario no recibe órdenes ni publica eventos; es una proyección que se recalcula desde el Libro Diario. Un archivo más solo para reenviar llamadas sería código sin función (YAGNI).
+
+**Telemetría:**
+- Depreciación registra las 5 fases con la correlación `depreciacion:<fecha de corte>`. `telemetriaDepreciacion` y sus dos funciones conservan su nombre, pero ahora escriben en la telemetría compartida.
+- Inventario registra la reconstrucción y la verificación (fase 5).
+
+**Determinismo:** se quitaron las llamadas de telemetría que había dentro de las funciones de cálculo y verificación de depreciación. Antes, calcular dejaba un efecto lateral; ahora los módulos de cálculo y de validación son puros y la telemetría queda solo en el orquestador.
+
+**Lo que se conservó:**
+- Las 54 funciones de Depreciación y las 17 de Inventario, con el mismo nombre.
+- Los mensajes de error.
+- El orden de las fases.
+
+**Carga:** `telemetria.js` se carga una sola vez, justo después de `base_datos.js`, en las 6 páginas que la usan. Los módulos nuevos se cargan antes de su orquestador.
+
+**Verificación:**
+- Las 51 pruebas de integración pasan.
+- Se agregaron 8 pruebas unitarias nuevas, entre ellas el caso de referencia: un activo de $2,400 genera $100 por mes y queda en $2,200 al cierre de febrero.
+- Se aplicaron 5 mutaciones (sin prorrateo, sin verificación triple, sin idempotencia, último costo en vez de promedio, estado incoherente) y las 5 fueron detectadas.
+- Prueba en el navegador con datos de ejemplo: las 7 pantallas cargan sin errores y la sincronización crea 6 partidas, una por mes con depreciación.
+
+## 9. Cómo replicarlo en otro proceso
 
 1. Mover las reglas puras a `<proceso>_validador.js` con dependencias por `contexto` y mensajes idénticos.
 2. Mover tipos, normalización y construcción a `<proceso>_contrato.js` (sin DOM ni BD; fechas e ids como parámetros).
