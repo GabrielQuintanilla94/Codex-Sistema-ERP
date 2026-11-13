@@ -26,3 +26,6 @@ El registro conserva `movimientoId`, tipo de cliente y fecha de creación.
 
 ## ACTUALIZACIÓN — ALGORITMIA DE 5 FASES
 Ventas: registrar/editar usa fase1EntradaVenta → fase2ValidarVenta → fase3ProcesarVenta → fase4PersistirVenta → fase5VerificarVenta. Stock/costo se procesan antes de persistir y EDA solo se publica tras fase 5.
+
+## Actualización noviembre 2026 — desacoplamiento
+Este archivo quedó como orquestador (5 fases, persistencia, verificación y evento EDA posterior). Contrato y reglas se movieron a `ventas_contrato.js` y `ventas_validador.js` sin cambiar nombres; la telemetría usa `registrarTelemetria("ventas", …)` y `trazarProcesoTelemetria`.

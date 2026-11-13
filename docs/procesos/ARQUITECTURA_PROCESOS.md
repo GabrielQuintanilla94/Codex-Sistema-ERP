@@ -1,6 +1,6 @@
 # Arquitectura de procesos desacoplados
 
-Patrón para separar cada proceso de negocio en módulos con una sola responsabilidad. **Piloto aplicado: Libro Diario.** Los demás procesos (Compras, Ventas, Depreciación, Inventario) seguirán el mismo patrón.
+Patrón para separar cada proceso de negocio en módulos con una sola responsabilidad. **Aplicado a: Libro Diario, Compras y Ventas.** Depreciación e Inventario seguirán el mismo patrón.
 
 ## 1. Los cinco módulos de un proceso
 
@@ -79,10 +79,34 @@ Registrar es una orden directa; «partida registrada» es el evento. En el Libro
 - Pruebas unitarias nuevas (16): normalización y construcción del contrato, 13 reglas del validador y telemetría. Cuatro mutaciones del validador fueron detectadas.
 - La prueba estática del HTML5 se mantiene en 10/10.
 
-## 7. Cómo replicarlo en otro proceso
+## 7. Compras y Ventas (segunda aplicación)
+
+| Módulo | Compras | Ventas |
+|---|---|---|
+| Orquestador (5 fases, persistencia, verificación, evento) | `js/compras/compras.js` | `js/ventas/ventas.js` |
+| Contrato (cuentas, normalización, resumen, construcción) | `js/compras/compras_contrato.js` | `js/ventas/ventas_contrato.js` |
+| Validador (líneas, existencias, verificaciones triples, estado) | `js/compras/compras_validador.js` | `js/ventas/ventas_validador.js` |
+| Interfaz (sin cambios; ya estaba separada) | `js/compras/compras_ui.js` | `js/ventas/ventas_ui.js` |
+| Infraestructura comercial compartida (sin cambios) | `js/comercial/operaciones.js` | `js/comercial/operaciones.js` |
+
+- **Validación contra el estado:** la fase 2 solo lee la base de datos. Las reglas viven en `validarCompraContraEstado` y `validarVentaContraEstado`, que son puras y reciben `{terceros, compras/ventas, movimientos, inventario, idExcluir}`.
+- **Telemetría:** cada fase registra en el proceso `compras` o `ventas` con la correlación `compras:<id>` o `ventas:<id>` (la misma que usa el trazado del caso completo). `trazarProcesoTelemetria` envuelve registrar y editar: cuenta cada éxito o rechazo y relanza el error sin ocultarlo.
+- **DRY:**
+  - La regla «contribuyente → DTE 03; consumidor final → DTE 01» aparecía 3 veces y quedó en `tipoDTEVenta`.
+  - La verificación triple del resumen de venta pasó a `verificarResumenVentaTresNiveles`, igual que en Compras.
+- **Lo que se conservó:**
+  - Las 14 funciones de Compras y las 15 de Ventas, con el mismo nombre.
+  - Los mensajes de error.
+  - La regla de guardar, verificar y recién después publicar el evento.
+- **Verificación:**
+  - Las 51 pruebas de integración pasan.
+  - Se agregaron 7 pruebas unitarias nuevas.
+  - Se aplicaron 4 mutaciones a los validadores y las 4 fueron detectadas. Una de ellas, la del nivel 2 de la verificación de ventas, al principio sobrevivió porque el nivel 3 la cubría, y se agregó un caso específico para ella.
+
+## 8. Cómo replicarlo en otro proceso
 
 1. Mover las reglas puras a `<proceso>_validador.js` con dependencias por `contexto` y mensajes idénticos.
 2. Mover tipos, normalización y construcción a `<proceso>_contrato.js` (sin DOM ni BD; fechas e ids como parámetros).
 3. Dejar en el orquestador solo las fases, la persistencia con `verificarORevertir` y la publicación posterior a la verificación.
-4. Reemplazar la telemetría local por `registrarTelemetria("<proceso>", …)`.
+4. Reemplazar la telemetría local por `registrarTelemetria("<proceso>", …)` y envolver los casos de uso con `trazarProcesoTelemetria`.
 5. Conservar nombres públicos, correr las pruebas existentes y agregar unitarias del contrato y del validador.

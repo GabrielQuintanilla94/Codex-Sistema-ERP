@@ -11,7 +11,7 @@ npm.cmd run qa
 
 `ci` instala las dependencias fijadas en `package-lock.json`; se repite al cambiar esas dependencias. Para las siguientes demostraciones basta `npm.cmd run qa`. En Linux/macOS se puede usar `npm`.
 
-El comando comprueba la sintaxis, ejecuta 61 pruebas unitarias sobre los archivos reales de IVA, motor contable, gráficos, cálculos del panel y Libro Diario (contrato, validador y telemetría), 17 pruebas estáticas del HTML5 (una por pantalla, nota global y controles del evaluador; ver [QA estático HTML5](QA_ESTATICO_HTML5.md)) y 51 pruebas de integración y flujos funcionales en navegador: 129 en total. Después abre `reportes-qa/index.html` en el navegador predeterminado. No necesitás abrir Live Server. Usa un servidor temporal y bases IndexedDB aisladas de tus datos.
+El comando comprueba la sintaxis, ejecuta 68 pruebas unitarias sobre los archivos reales de IVA, motor contable, gráficos, cálculos del panel, Libro Diario, Compras y Ventas (contratos, validadores y telemetría), 17 pruebas estáticas del HTML5 (una por pantalla, nota global y controles del evaluador; ver [QA estático HTML5](QA_ESTATICO_HTML5.md)) y 51 pruebas de integración y flujos funcionales en navegador: 136 en total. Después abre `reportes-qa/index.html` en el navegador predeterminado. No necesitás abrir Live Server. Usa un servidor temporal y bases IndexedDB aisladas de tus datos.
 
 Utiliza Chromium instalado o Edge/Chrome detectado. Si falta navegador, descarga Chromium mediante Playwright; esa primera preparación requiere conexión. También puede prepararse con `npm.cmd run qa:preparar`. Para elegir un ejecutable, definir `CHROMIUM_PATH` con su ruta completa.
 
@@ -27,7 +27,7 @@ El HTML incluye enlaces a JSON y registros. Cada ejecución conserva su propia c
 ## Criterios de aprobación automática
 
 - Sintaxis válida en todos los archivos `js/**/*.js`.
-- Al menos 61 casos unitarios, 17 estáticos HTML5 y 51 de integración; ninguno fallido, omitido o pendiente.
+- Al menos 68 casos unitarios, 17 estáticos HTML5 y 51 de integración; ninguno fallido, omitido o pendiente.
 - HTML5: 0 defectos críticos y 0 mayores por archivo, y nota global ≥ 9,0.
 - Por cada archivo medido: líneas ≥90%, ramas ≥90% y funciones 100%.
 - El proceso devuelve código 0 si aprueba; devuelve 1 ante fallo, prerrequisito ausente, cobertura insuficiente o salida inválida.

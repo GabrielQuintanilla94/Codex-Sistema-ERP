@@ -3,8 +3,8 @@ Conservar nombres, API, funcionalidades y arquitectura del archivo. Estas fases 
 <!-- Inicio fase 0 -->
 ## Fase 0 — Paths y referencias
 - Raíz: `/workspace/Codex-Sistema-ERP`; fuente: `js/compras/compras.js`.
-- Funciones existentes: `validarLineaCompra`, `normalizarLineaCompraParaVista`, `verificarResumenCompraTresNiveles`, `calcularResumenCompra`, `verificarCompraConstruidaTresNiveles`, `construirCompra`, `fase1EntradaCompra`, `fase2ValidarCompra`, `fase3ProcesarCompra`, `fase4PersistirCompra`, `fase5VerificarCompra`, `registrarCompra`, `editarCompra`, `importarCompras`.
-- Variables de nivel superior: `CUENTA_INVENTARIO_COMPRA`, `CUENTA_PROVEEDORES`.
+- Funciones existentes (orquestador): `fase1EntradaCompra`, `fase2ValidarCompra`, `fase3ProcesarCompra`, `fase4PersistirCompra`, `fase5VerificarCompra`, `registrarCompra`, `editarCompra`, `importarCompras`. Desde noviembre de 2026 el contrato está en `compras_contrato.js`, las reglas en `compras_validador.js` y la telemetría en `js/eventos/telemetria.js` (proceso `compras`). Ver `docs/procesos/ARQUITECTURA_PROCESOS.md`.
+- Variables de nivel superior: ninguna (las cuentas se movieron al contrato).
 - Dependencias locales por llamadas: `js/base_datos.js`: `ejecutarConBloqueoContable`, `obtenerComprasBD`, `obtenerMovimientosBD`, `obtenerTercerosBD`; `js/comercial/importador_csv.js`: `agruparPorDocumento`; `js/comercial/operaciones.js`: `comercialACentavos`, `comercialADolares`, `crearIdOperacion`, `identificadoresFiscalesDesdeCSV`, `normalizarDocumento`, `normalizarFechaComercial`, `normalizarIdentificadoresFiscales`, `persistirEdicionComercial`, `persistirOperacionComercial`, `prepararPlanEdicionComercial`, `publicarEventoComercialSeguro`, `recuperarVerificacionComercial`, `siguienteIdMovimientoComercial`, `validarIdentidadFiscalDuplicada`, `validarPartidaComercial`, `validarPeriodosEditablesIVA`, `verificarEstadoComercialPersistido`; `js/impuestos/iva.js`: `calcularIVA`; `js/inventario/inventario_costos.js`: `construirMapaInventarioDesdeMovimientos`, `prepararMovimientoConInventario`.
 - Consumidores por llamadas: `js/compras/compras_ui.js`.
 - HTML que lo carga: `operaciones.html`.

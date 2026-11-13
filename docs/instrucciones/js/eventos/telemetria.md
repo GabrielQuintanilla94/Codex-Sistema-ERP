@@ -3,9 +3,9 @@ Conservar nombres, API, funcionalidades y arquitectura del archivo. Estas fases 
 <!-- Inicio fase 0 -->
 ## Fase 0 — Paths y referencias
 - Fuente: `js/eventos/telemetria.js`; arquitectura: `docs/procesos/ARQUITECTURA_PROCESOS.md`.
-- Funciones existentes: `obtenerRegistroTelemetria`, `registrarTelemetria`, `obtenerEstadoTelemetria`.
+- Funciones existentes: `obtenerRegistroTelemetria`, `registrarTelemetria`, `obtenerEstadoTelemetria`, `trazarProcesoTelemetria`.
 - Constantes: `TELEMETRIA_MAX_HISTORIAL`, `telemetriaProcesos`.
-- Consumidores: `libro_diario.js` (proceso `libro_diario`); los demás procesos se migrarán con el mismo API.
+- Consumidores: `libro_diario.js` (`libro_diario`), `compras.js` (`compras`), `ventas.js` (`ventas`).
 - Consulta en consola: `obtenerEstadoTelemetria()`.
 <!-- Fin fase 0 -->
 <!-- Inicio fase 1 -->

@@ -31,3 +31,6 @@ El registro conserva `movimientoId`, origen y un único `creadoEn` compartido co
 
 ## ACTUALIZACIÓN — ALGORITMIA DE 5 FASES
 Compras: registrar/editar usa fase1EntradaCompra → fase2ValidarCompra → fase3ProcesarCompra → fase4PersistirCompra → fase5VerificarCompra. El evento EDA se publica únicamente tras verificar registro, movimiento e inventario persistidos.
+
+## Actualización noviembre 2026 — desacoplamiento
+Este archivo quedó como orquestador (5 fases, persistencia, verificación y evento EDA posterior). Contrato y reglas se movieron a `compras_contrato.js` y `compras_validador.js` sin cambiar nombres; la telemetría usa `registrarTelemetria("compras", …)` y `trazarProcesoTelemetria`.

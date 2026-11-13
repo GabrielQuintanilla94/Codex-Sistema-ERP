@@ -357,6 +357,10 @@ Se rediseñaron Inicio, Inventario y Activos fijos con `js/graficos/graficos.js`
 
 `libro_diario.js` quedó como orquestador; se agregaron `libro_diario_contrato.js`, `libro_diario_validador.js`, `libro_diario_ui.js` y `js/eventos/telemetria.js`. Nombres públicos conservados. QA principal: **129 casos** (61 + 17 + 51). Patrón en `docs/procesos/ARQUITECTURA_PROCESOS.md`; siguiente paso propuesto: replicarlo en Compras, Ventas, Depreciación e Inventario.
 
+### Actualización (13 de noviembre de 2026): Compras y Ventas desacopladas
+
+Se agregaron `compras_contrato.js`, `compras_validador.js`, `ventas_contrato.js` y `ventas_validador.js`; `compras.js` y `ventas.js` quedaron como orquestadores con telemetría (`trazarProcesoTelemetria`). QA principal: **136 casos** (68 + 17 + 51). Pendientes del patrón: Depreciación e Inventario.
+
 ## 12. Problemas encontrados en Windows y correcciones
 
 ### Git local antes del QA

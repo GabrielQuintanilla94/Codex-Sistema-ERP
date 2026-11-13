@@ -28,3 +28,16 @@ function obtenerEstadoTelemetria(proceso) {
     return Object.fromEntries(Array.from(telemetriaProcesos, ([clave, registro]) => [clave, copiar(registro)]));
 }
 // Fin fase 3
+// Inicio fase 4: trazado de un caso de uso completo (cuenta un éxito o un rechazo y relanza el error sin ocultarlo)
+async function trazarProcesoTelemetria(proceso, operacion, ejecutar) {
+    registrarTelemetria(proceso, operacion, "Inicio");
+    try {
+        const resultado = await ejecutar();
+        registrarTelemetria(proceso, operacion, "Completada", false, resultado && resultado.id !== undefined ? proceso + ":" + resultado.id : null);
+        return resultado;
+    } catch (error) {
+        registrarTelemetria(proceso, operacion, error && error.message ? error.message : String(error), true);
+        throw error;
+    }
+}
+// Fin fase 4
