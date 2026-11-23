@@ -74,6 +74,9 @@ Los anexos DTE 01/03 usan punto y coma; consumidor final se agrupa por día e in
 ## Procesos desacoplados
 Los cinco procesos (Libro Diario, Compras, Ventas, Depreciación e Inventario) se dividen en orquestador, contrato, validador e interfaz (Depreciación agrega un módulo de cálculo; el Libro Diario usa `movimientos.js` para el estado), con telemetría compartida en `js/eventos/telemetria.js` y el router EDA existente. Patrón, principios y cómo replicarlo: [Arquitectura de procesos](docs/procesos/ARQUITECTURA_PROCESOS.md).
 
+## Reportes financieros
+`reportes.html` funciona como visor de reportes de ERP: pestañas, período predefinido, comparación con el período anterior o el año anterior, estados con subtotales (utilidad bruta, de operación y neta), control de cuadre, libro de cada cuenta con saldo acumulado, Exportar CSV e Imprimir / PDF. Detalle: [Visualización BI §9](docs/diseno/VISUALIZACION_BI.md).
+
 ## Visualización BI
 Inicio muestra indicadores con variación contra el mes anterior y mini tendencia, ventas y compras de los últimos 6 meses con tooltip y tabla, resultado del mes con margen bruto, ranking de costos y gastos e IVA. Los gráficos salen de `js/graficos/graficos.js` (SVG sin dependencias, render atómico). Principios, paleta validada y fuentes: [Visualización BI](docs/diseno/VISUALIZACION_BI.md).
 

@@ -365,6 +365,10 @@ Se agregaron `compras_contrato.js`, `compras_validador.js`, `ventas_contrato.js`
 
 Nuevos: `depreciacion_contrato.js`, `depreciacion_validador.js`, `depreciacion_calculo.js`, `inventario_contrato.js`, `inventario_validador.js`. `telemetria.js` se carga una vez tras `base_datos.js` en 6 páginas. El patrón quedó aplicado a los cinco procesos. QA principal: **144 casos** (76 + 17 + 51).
 
+### Actualización (23 de noviembre de 2026): visor de reportes financieros
+
+`reportes.html` y `js/reportes/reportes.js` se rediseñaron (pestañas, filtros, comparación, documento contable, CSV e impresión); nueva estructura pura en `js/reportes/reportes_estructura.js`. `componentes.css` pasa a `?v=4`. QA principal: **151 casos** (82 + 17 + 52).
+
 ## 12. Problemas encontrados en Windows y correcciones
 
 ### Git local antes del QA

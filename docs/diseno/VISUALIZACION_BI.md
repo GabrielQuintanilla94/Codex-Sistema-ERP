@@ -96,3 +96,74 @@ Validación sobre fondo blanco: banda de luminosidad, croma, contraste ≥ 3:1 y
 - No hay modo oscuro: la aplicación no lo tenía y agregarlo sería un cambio aparte.
 - Los gráficos usan los datos del navegador (IndexedDB). No reemplazan los reportes contables formales.
 - La tendencia compara bases gravadas. El resultado y la liquidez se muestran en los indicadores y sus sparklines.
+
+## 9. Reportes financieros (rediseño de noviembre de 2026)
+
+### Qué fallaba
+- **Títulos repetidos:** «Reportes estándar», «Vista del reporte» y otra vez el nombre del reporte.
+- **Selección poco profesional:** tarjetas con íconos de texto para elegir el reporte y nombres de cuenta en verde subrayado.
+- **Estado de resultados sin estructura:** solo dos listas (ingresos y gastos), sin utilidad bruta ni utilidad de operación.
+- **Balance incompleto:** la depreciación acumulada no se veía como resta del activo fijo.
+- **Faltaban funciones básicas:** no había períodos predefinidos, comparación con otro período, exportación ni impresión.
+
+### Cómo queda (patrones comunes de NetSuite, SAP Business One, Dynamics 365 Business Central, Odoo y QuickBooks Online)
+
+| Elemento | Decisión |
+|---|---|
+| Navegación | Pestañas: Balanza de comprobación · Estado de resultados · Balance general |
+| Filtros (una fila) | Período predefinido (este mes, mes anterior, trimestre, año a la fecha, año anterior, todas las fechas, personalizado), Desde/Hasta («Al» en el balance) y Comparar con (período anterior o mismo período del año anterior) |
+| Documento | Encabezado centrado (título, período en letras, «Cifras en USD»); jerarquía sección → grupo del catálogo → cuenta, con su código |
+| Subtotales | Una raya sobre los subtotales y totales; doble subrayado en el total final; renglones de resultado (utilidad bruta, de operación) sombreados |
+| Negativos | Entre paréntesis, según la convención contable: ($554.84) |
+| Comparación | Columnas Actual · Comparativo · Variación · Var. %; el margen bruto varía en puntos porcentuales (pp) |
+| Control | Insignia con ícono y texto: «✓ Cuadrado: Activo = Pasivo + Patrimonio» o «✕ Descuadre de $X» |
+| Detalle | Al hacer clic o presionar Enter sobre una cuenta se abren sus movimientos del Libro Diario con saldo acumulado; las compras y ventas se pueden eliminar desde ahí |
+| Acciones | Exportar CSV (separador `;`, con BOM para Excel) e Imprimir / PDF (la hoja de impresión oculta menú, filtros y tarjetas) |
+
+**Estructura de cada estado:**
+- **Estado de resultados por función:**
+  1. Ingresos de operación.
+  2. Costo de ventas (cuentas 5).
+  3. **Utilidad bruta** y margen bruto.
+  4. Gastos de operación (cuentas 6).
+  5. **Utilidad de operación.**
+  6. **Utilidad neta del período.**
+- **Balance general** en orden de liquidez:
+  - Activo corriente, activo fijo y depreciación acumulada (que resta).
+  - Pasivo.
+  - Patrimonio, incluido el resultado del ejercicio.
+  - Total pasivo y patrimonio.
+- **Balanza:** cuentas agrupadas por clasificación, con «Sumas iguales» al final.
+
+**Regla de no repetir:** si una sección tiene un solo grupo del catálogo, el grupo y su subtotal no se muestran. Así se evita la secuencia «Pasivo corriente / Total pasivo corriente / Total pasivo».
+
+### Arquitectura
+- `js/reportes/reportes_estructura.js` (nuevo, puro) arma los renglones de cada estado, los períodos predefinidos y comparativos, las variaciones, el formato contable y el CSV. Las cifras salen sin cambios de `motor_contable.js` y se verifican antes de mostrarse (`verificarReporteAntesDeRender`, también para el período comparativo).
+- `js/reportes/reportes.js` queda como interfaz y orquestación: filtros, documento, detalle por cuenta, exportar e imprimir. Sigue siendo el consumidor `reportes` del router EDA.
+
+**Funciones:**
+- **Reemplazadas por el renderizador genérico:** `crearFilaBalanza`, `crearFilaEstado` y `crearSeccionEstado`. Ahora están `crearFilaReporte` y `renderizarDocumentoReporte`.
+- **Retirada:** `prepararVistaBalanza`, porque hay una sola vista de documento.
+- **Conservadas:** las demás, con su nombre.
+
+### Fuentes
+10. IASB. *Norma NIIF para las PYMES*, secciones 3 (Presentación de estados financieros), 4 (Estado de situación financiera) y 5 (Estado del resultado integral).
+11. AICPA/FASB. ASC 220 y ASC 210: presentación del estado de resultados y del balance (clasificación por función, orden de liquidez, partidas corrientes y no corrientes).
+
+### Verificación
+- **Pruebas unitarias nuevas (6):**
+  - Períodos y comparativos, incluidos el cambio de año y el 29 de febrero.
+  - Formato contable.
+  - Estado de resultados (utilidad bruta, margen, control y comparación).
+  - Balance (depreciación negativa, pérdida en patrimonio, detección de descuadre).
+  - Balanza.
+  - CSV.
+  - Cuatro errores metidos a propósito fueron detectados.
+- **Prueba de integración nueva (1):** en una página real:
+  - balanza cuadrada;
+  - estado de resultados de septiembre comparado con agosto (utilidad bruta $20.00, margen 50.0 %);
+  - CSV exportado;
+  - libro de la cuenta 4101 con saldo $40.00;
+  - balance con total $138.20 y control cuadrado.
+- **Pruebas anteriores:** las 51 de integración siguen aprobando, incluida la conciliación que lee `#resumen-valor-1`.
+

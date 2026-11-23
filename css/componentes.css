@@ -121,3 +121,58 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Aria
 @media print{.grafico-tabla{display:none}}
 /* Activos fijos: controles de corte en una fila cuando el panel ocupa todo el ancho */
 @media(min-width:761px) and (max-width:1180px){:is(.app-shell) .asset-controls{grid-template-columns:minmax(180px,1fr) auto auto auto;align-items:end}:is(.app-shell) .asset-controls .titulo-reporte{grid-column:1/-1}:is(.app-shell) .asset-controls .boton-ancho{width:auto}}
+/* ===== Reportes financieros (docs/diseno/VISUALIZACION_BI.md §9): pestañas, filtros y documento contable ===== */
+:is(.app-shell) .pestanas-reporte{display:flex;gap:2px;margin:0 0 14px;border-bottom:1px solid var(--erp-border);overflow-x:auto}
+:is(.app-shell) .pestanas-reporte button{min-height:0;padding:10px 14px;background:none;border:0;border-bottom:2px solid transparent;border-radius:0;color:var(--erp-muted);font-size:13px;font-weight:600;white-space:nowrap}
+:is(.app-shell) .pestanas-reporte button:hover{color:var(--erp-text)}
+:is(.app-shell) .pestanas-reporte button.activo{color:var(--erp-text);border-bottom-color:var(--erp-blue)}
+:is(.app-shell) .barra-filtros-reporte{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px;margin:0 0 16px}
+:is(.app-shell) .barra-filtros-reporte label{display:grid;gap:4px;font-size:12px;font-weight:600;color:var(--erp-muted)}
+:is(.app-shell) .barra-filtros-reporte .oculto{display:none}
+:is(.app-shell) .resumen-reporte small{font-size:11px;color:var(--erp-muted)}
+:is(.app-shell) .mensaje-reporte:empty{display:none}
+:is(.app-shell) .mensaje-reporte{margin:0 0 12px}
+:is(.app-shell) .documento-reporte{padding:28px 28px 18px}
+:is(.app-shell) .documento-reporte-cabecera{margin-bottom:18px;text-align:center}
+:is(.app-shell) .documento-reporte-cabecera h2{margin:0;font-size:20px;color:var(--erp-text)}
+:is(.app-shell) .documento-reporte-cabecera p{margin:4px 0 0;font-size:12px;color:var(--erp-muted)}
+:is(.app-shell) .documento-reporte .documento-reporte-tabla{border:0;border-radius:0}
+:is(.app-shell) .documento-reporte table.estado-financiero{width:100%;min-width:560px;border-collapse:collapse;font-size:13px}
+:is(.app-shell) .documento-reporte table.estado-financiero.comparativo{min-width:760px}
+:is(.app-shell) .documento-reporte table.estado-financiero :is(th,td){padding:7px 12px;border:0;text-align:left;white-space:normal}
+:is(.app-shell) .documento-reporte table.estado-financiero thead th{border-bottom:1px solid var(--erp-border)}
+:is(.app-shell) .documento-reporte table.estado-financiero .importe{width:150px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+:is(.app-shell) .documento-reporte table.estado-financiero tbody tr:hover{background:none}
+:is(.app-shell) .documento-reporte .renglon-seccion th{padding-top:18px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--erp-muted);background:none}
+:is(.app-shell) .documento-reporte :is(.renglon-grupo,.renglon-subtotal,.renglon-indicador) td:first-child{padding-left:24px}
+:is(.app-shell) .documento-reporte .renglon-grupo td{font-weight:600}
+:is(.app-shell) .documento-reporte .renglon-cuenta td:first-child{padding-left:40px}
+:is(.app-shell) .documento-reporte .codigo-cuenta{display:inline-block;min-width:44px;margin-right:8px;color:var(--erp-muted);font-variant-numeric:tabular-nums}
+:is(.app-shell) .documento-reporte .renglon-subtotal td{font-weight:600}
+:is(.app-shell) .documento-reporte .renglon-subtotal td.importe{border-top:1px solid #c9ced8}
+:is(.app-shell) .documento-reporte :is(.renglon-total,.renglon-resultado) td{font-weight:700}
+:is(.app-shell) .documento-reporte :is(.renglon-total,.renglon-resultado) td.importe{border-top:1px solid #8f98a8}
+:is(.app-shell) .documento-reporte .renglon-resultado td{background:#f6f8fb}
+:is(.app-shell) .documento-reporte .renglon-indicador td{padding-top:2px;color:var(--erp-muted);font-size:12px;font-style:italic}
+:is(.app-shell) .documento-reporte .renglon-final td{padding-top:10px;font-size:14px;font-weight:800}
+:is(.app-shell) .documento-reporte .renglon-final td.importe{border-top:1px solid var(--erp-text);border-bottom:3px double var(--erp-text)}
+:is(.app-shell) .documento-reporte .fila-cuenta-reporte{cursor:pointer}
+:is(.app-shell) .documento-reporte .fila-cuenta-reporte:is(:hover,:focus-visible) td{background:#f4f8ff}
+:is(.app-shell) .documento-reporte .fila-cuenta-reporte:is(:hover,:focus-visible) .nombre-cuenta{color:var(--erp-blue);text-decoration:underline}
+:is(.app-shell) .documento-reporte .fila-cuenta-reporte.seleccionada td{background:#eef3ff}
+:is(.app-shell) .documento-reporte .fila-cuenta-reporte:focus-visible{outline:2px solid var(--erp-blue);outline-offset:-2px}
+:is(.app-shell) .documento-reporte .fila-detalle-cuenta-reporte > td{padding:0 0 12px;background:#fafbfd}
+:is(.app-shell) .documento-reporte .libro-cuenta-reporte{border-left:3px solid var(--erp-blue)}
+:is(.app-shell) .documento-reporte .libro-cuenta-cabecera span{font-size:11px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--erp-muted)}
+:is(.app-shell) .documento-reporte-pie{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;padding-top:12px;border-top:1px solid var(--erp-border)}
+:is(.app-shell) .documento-reporte-pie .nota{margin:0;font-size:11px;color:var(--erp-muted)}
+:is(.app-shell) .control-reporte{margin:0;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:600}
+:is(.app-shell) .control-reporte:empty{display:none}
+:is(.app-shell) .control-reporte.cuadra{color:var(--viz-bueno);background:#eaf5ec}
+:is(.app-shell) .control-reporte.descuadre{color:var(--viz-malo);background:#fcebeb}
+@media(max-width:760px){:is(.app-shell) .documento-reporte{padding:18px 12px}:is(.app-shell) .barra-filtros-reporte label{flex:1 1 140px}}
+@media print{body{background:#fff}.barra-lateral,.pestanas-reporte,.barra-filtros-reporte,.resumen-reporte,.mensaje-reporte,.reportes-page .encabezado-pagina,.grafico-tabla{display:none!important}.app-main{margin:0!important;width:auto!important;padding:0!important}.documento-reporte{border:0!important;box-shadow:none!important;padding:0!important}.documento-reporte table.estado-financiero{min-width:0!important}}
+:is(.app-shell) .documento-reporte .libro-cuenta-tabla{min-width:880px;font-size:12px}
+:is(.app-shell) .documento-reporte .libro-cuenta-tabla :is(th,td){padding:6px 10px;text-align:left;vertical-align:middle}
+:is(.app-shell) .documento-reporte .libro-cuenta-tabla .importe{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+:is(.app-shell) .documento-reporte .libro-cuenta-tabla .eliminar-operacion-reporte{min-height:0;padding:3px 8px;font-size:11px}

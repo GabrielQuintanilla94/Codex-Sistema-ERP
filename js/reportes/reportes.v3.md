@@ -672,3 +672,6 @@ El detalle por cuenta permite eliminar movimientos cuyo origen sea `Compra` o `V
 ## Afinación octubre 2026
 - `Generar` se bloquea durante I/O.
 - La UI exige `reporte.verificacion.valido` antes de renderizar y relee IndexedDB en cada generación.
+
+## Actualización noviembre 2026 — visor de reportes
+Pestañas, filtros en una fila (período predefinido y comparación), documento contable con jerarquía y subtotales, control de cuadre, libro de la cuenta con saldo acumulado, Exportar CSV e Imprimir / PDF. La estructura se movió a `reportes_estructura.js`. Ver `docs/diseno/VISUALIZACION_BI.md` §9.

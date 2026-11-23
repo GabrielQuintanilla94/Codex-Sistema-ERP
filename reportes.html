@@ -3,93 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reportería contable</title>
-    <link rel="stylesheet" href="css/estilos.css?v=44"><link rel="stylesheet" href="css/componentes.css?v=3">
+    <title>Reportes financieros</title>
+    <link rel="stylesheet" href="css/estilos.css?v=44"><link rel="stylesheet" href="css/componentes.css?v=4">
 </head>
 <body>
 <div class="app-shell">
 <aside class="barra-lateral" aria-label="Navegación principal"><a class="marca-app" href="index.html" title="Inicio"><span>LC</span><strong>Contable</strong></a><nav class="navegacion-lateral"></nav></aside>
-    <main class="contenedor contenedor-reportes app-main">
-<section class="directorio-reportes" aria-labelledby="titulo-directorio-reportes">
-            <div class="directorio-reportes-cabecera"><span class="etiqueta-version">REPORTES Y ANÁLISIS</span><h1 id="titulo-directorio-reportes">Reportes estándar</h1><p>Seleccione el reporte contable que necesita consultar.</p></div>
-            <div class="selector-reportes" role="tablist" aria-label="Reportes disponibles">
-                <button class="activo" type="button" data-reporte="balanza"><span class="icono-reporte">≡</span><span><strong>Balanza de comprobación</strong><small>Movimientos y saldos por cuenta</small></span><span class="flecha-reporte">›</span></button>
-                <button type="button" data-reporte="balance"><span class="icono-reporte">▣</span><span><strong>Balance general</strong><small>Activo, pasivo y patrimonio</small></span><span class="flecha-reporte">›</span></button>
-                <button type="button" data-reporte="resultados"><span class="icono-reporte">↗</span><span><strong>Estado de resultados</strong><small>Ingresos, gastos y resultado neto</small></span><span class="flecha-reporte">›</span></button>
-            </div>
-        </section><div class="separador-seccion"><span>Vista del reporte</span></div>
-        <section class="encabezado-pagina encabezado-reportes">
+    <main class="contenedor contenedor-reportes app-main reportes-page">
+        <section class="encabezado-pagina">
             <div>
-                <span class="etiqueta-version">REPORTERÍA CONTABLE</span>
-                <h2 id="titulo-reporte-pagina" class="titulo-pagina">Balanza de comprobación</h2>
-                <p id="descripcion-reporte">Movimientos y saldos de las cuentas contables.</p>
-                <div class="acciones-encabezado acciones-con-margen">
-                    <a class="boton-secundario-azul" href="partida_manual.html?accion=importar">⇧ Importar CSV</a>
-                    <a class="boton-principal" href="partida_manual.html?accion=nueva-partida">＋ Nueva partida</a>
-                </div>
+                <span class="etiqueta-version">REPORTES FINANCIEROS</span>
+                <h1>Reportes financieros</h1>
+                <p>Calculados desde el Libro Diario. Seleccioná una cuenta para ver sus movimientos.</p>
             </div>
-            <div class="filtros-reporte">
-                <label id="campo-fecha-desde">Desde<input id="fecha-desde" type="date"></label>
-                <label><span id="etiqueta-fecha-hasta">Hasta</span><input id="fecha-hasta" type="date"></label>
-                <button id="generar-reporte" type="button" class="boton-primario">Generar</button>
+            <div class="acciones-encabezado">
+                <button id="exportar-reporte" class="boton-secundario-azul" type="button">Exportar CSV</button>
+                <button id="imprimir-reporte" class="boton-secundario-azul" type="button">Imprimir / PDF</button>
             </div>
         </section>
-        <section class="resumen-general resumen-balanza">
-            <article>
-                <span id="resumen-etiqueta-1">Total Debe</span>
-                <strong id="resumen-valor-1">$0.00</strong>
-                <small id="resumen-detalle-1">Movimientos del período</small>
-            </article>
-            <article>
-                <span id="resumen-etiqueta-2">Total Haber</span>
-                <strong id="resumen-valor-2">$0.00</strong>
-                <small id="resumen-detalle-2">Movimientos del período</small>
-            </article>
-            <article>
-                <span id="resumen-etiqueta-3">Cuentas con movimiento</span>
-                <strong id="resumen-valor-3">0</strong>
-                <small id="resumen-detalle-3">Solo cuentas auxiliares</small>
-            </article>
-        </section>
-        <section class="panel-reporte">
-            <div class="titulo-reporte">
-                <div>
-                    <h2 id="titulo-detalle-reporte">Detalle por cuenta</h2>
-                    <p id="periodo-reporte">Período completo</p>
-                </div>
-                <p id="mensaje-reporte" class="mensaje-reporte"></p>
-            </div>
-            <div id="vista-balanza" class="tabla-reporte-contenedor">
-                <table class="tabla-reporte">
-                    <thead>
-                        <tr>
-                            <th>Código</th>
-                            <th>Cuenta</th>
-                            <th>Clasificación</th>
-                            <th>Naturaleza</th>
-                            <th>Debe</th>
-                            <th>Haber</th>
-                            <th>Saldo deudor</th>
-                            <th>Saldo acreedor</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cuerpo-balanza"></tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="4">Totales</td>
-                            <td id="pie-total-debe">$0.00</td>
-                            <td id="pie-total-haber">$0.00</td>
-                            <td id="pie-saldo-deudor">$0.00</td>
-                            <td id="pie-saldo-acreedor">$0.00</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-            <div id="vista-estado-financiero" class="oculto"></div>
-            <p id="sin-datos-reporte" class="sin-resultados">No hay movimientos para el período seleccionado.</p>
-        </section>
-        <p id="nota-reporte" class="nota">Los totales se calculan en centavos para evitar diferencias por decimales.</p>
 
+        <div class="pestanas-reporte" role="tablist" aria-label="Reportes disponibles">
+            <button class="activo" type="button" role="tab" aria-selected="true" data-reporte="balanza">Balanza de comprobación</button>
+            <button type="button" role="tab" aria-selected="false" data-reporte="resultados">Estado de resultados</button>
+            <button type="button" role="tab" aria-selected="false" data-reporte="balance">Balance general</button>
+        </div>
+
+        <div class="barra-filtros-reporte" role="group" aria-label="Filtros del reporte">
+            <label>Período<select id="periodo-preset">
+                <option value="todo">Todas las fechas</option>
+                <option value="mes">Este mes</option>
+                <option value="mes-anterior">Mes anterior</option>
+                <option value="trimestre">Este trimestre</option>
+                <option value="anio">Año a la fecha</option>
+                <option value="anio-anterior">Año anterior</option>
+                <option value="personalizado">Personalizado</option>
+            </select></label>
+            <label id="campo-fecha-desde">Desde<input id="fecha-desde" type="date"></label>
+            <label><span id="etiqueta-fecha-hasta">Hasta</span><input id="fecha-hasta" type="date"></label>
+            <label id="campo-comparar">Comparar con<select id="comparar-reporte">
+                <option value="ninguno">Sin comparación</option>
+                <option value="anterior">Período anterior</option>
+                <option value="anio">Mismo período del año anterior</option>
+            </select></label>
+            <button id="generar-reporte" type="button" class="boton-primario">Actualizar</button>
+        </div>
+
+        <section class="resumen-general resumen-reporte" aria-label="Cifras clave">
+            <article><span id="resumen-etiqueta-1">Total Debe</span><strong id="resumen-valor-1">$0.00</strong><small id="resumen-detalle-1">Movimientos del período</small></article>
+            <article><span id="resumen-etiqueta-2">Total Haber</span><strong id="resumen-valor-2">$0.00</strong><small id="resumen-detalle-2">Movimientos del período</small></article>
+            <article><span id="resumen-etiqueta-3">Cuentas con movimiento</span><strong id="resumen-valor-3">0</strong><small id="resumen-detalle-3">Solo cuentas auxiliares</small></article>
+        </section>
+        <p id="mensaje-reporte" class="mensaje-reporte" role="status"></p>
+
+        <article class="panel-reporte documento-reporte" aria-labelledby="titulo-reporte-pagina">
+            <header class="documento-reporte-cabecera">
+                <h2 id="titulo-reporte-pagina">Balanza de comprobación</h2>
+                <p id="periodo-reporte">Todas las fechas</p>
+                <p id="descripcion-reporte">Cifras en dólares estadounidenses (USD)</p>
+            </header>
+            <div id="vista-estado-financiero" class="tabla-reporte-contenedor documento-reporte-tabla"></div>
+            <p id="sin-datos-reporte" class="sin-resultados">No hay movimientos para el período seleccionado.</p>
+            <footer class="documento-reporte-pie">
+                <p id="control-reporte" class="control-reporte"></p>
+                <p id="nota-reporte" class="nota">Los totales se calculan en centavos para evitar diferencias por decimales.</p>
+            </footer>
+        </article>
     </main>
 </div>
     <script src="js/base_datos.js?v=12"></script><script src="js/eventos/telemetria.js?v=3"></script>
@@ -102,7 +80,8 @@
     <script src="js/eventos/bus_eventos.js?v=11"></script><script src="js/eventos/routing_eventos.js?v=3"></script>
     <script src="js/eventos/proyeccion_contable.js?v=11"></script>
     <script src="js/diario/movimientos.js?v=11"></script>
-    <script src="js/reportes/reportes.js?v=15"></script>
+    <script src="js/reportes/reportes_estructura.js?v=1"></script>
+    <script src="js/reportes/reportes.js?v=16"></script>
     <script src="js/nav.js?v=6"></script>
 </body>
 </html>
